@@ -1,15 +1,22 @@
-@router.post("")
-def create_item(
-        payload: ItemCreate,
-        db: Session = Depends(get_db)
-):
-    return ItemService.create(db, payload)
-
 @router.delete("/{item_id}")
 def delete_item(
-        item_id: Int,
-        db: Session = Depends(get_db)
+    item_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        get_current_user
+    )
 ):
-    ItemService.delete(db, item_id)
-    return {"message": " deleted"}
+    if current_user["role"] != "superadmin":
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Super Admin"
+        )
 
+    success = ItemService.delete(
+        db,
+        item_id
+    )
+
+    return {
+        "message": "Barang berhasil dihapus"
+    }
