@@ -12,7 +12,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Warehouse Management")
 
 
-app.include_router(item.router)
+app.include_router(items.router)
 app.include_router(stock_in.router)
 app.include_router(stock_out.router)
 

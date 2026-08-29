@@ -1,12 +1,13 @@
 from sqlalchemy.orm import Session
 
-from app.models.item import item
+from app.models.item import Item
 from app.schemas.item import ItemCreate
+
 
 class ItemService:
 
     @staticmethod
-    def get_all(db:Session):
+    def get_all(db: Session):
         return (
             db.query(Item)
             .order_by(Item.item_name.asc())
@@ -15,13 +16,19 @@ class ItemService:
 
     @staticmethod
     def get_by_id(
+        db: Session,
+        item_id: int
+    ):
+        return (
+            db.query(Item)
             .filter(Item.id == item_id)
             .first()
         )
+
     @staticmethod
     def get_by_code(
-    db: Session,
-    item_code: str
+        db: Session,
+        item_code: str
     ):
         return (
             db.query(Item)
@@ -36,21 +43,21 @@ class ItemService:
     ):
         existing_item = (
             db.query(Item)
-            .filter(
-                Item.item_code == payload.item_code
-            )
+            .filter(Item.item_code == payload.item_code)
             .first()
         )
+
         if existing_item:
             raise ValueError(
                 "Kode barang sudah digunakan"
             )
+
         item = Item(
             item_code=payload.item_code,
             item_name=payload.item_name,
             category=payload.category,
             unit=payload.unit,
-            min_stock=payload.min-stock,
+            min_stock=payload.min_stock,
             location=payload.location,
             stock=0
         )
@@ -77,7 +84,7 @@ class ItemService:
             return None
 
         item.item_code = payload.item_code
-        item.item_name = payload,item_name
+        item.item_name = payload.item_name
         item.category = payload.category
         item.unit = payload.unit
         item.min_stock = payload.min_stock
@@ -101,6 +108,7 @@ class ItemService:
 
         if not item:
             return False
+
         db.delete(item)
         db.commit()
 
@@ -113,22 +121,18 @@ class ItemService:
     ):
         return (
             db.query(Item)
-            .filter(
-                Item.item_name.ilike(f"%{keyword}%")
-            )
+            .filter(Item.item_name.ilike(f"%{keyword}%"))
             .all()
         )
 
     @staticmethod
     def get_low_stock(
         db: Session
-
     ):
-        item = db.query(Item).all()
+        items = db.query(Item).all()
 
-        return [ item
-                for item in ItemServiceif item.stock <= item.min_stock
+        return [
+            item
+            for item in items
+            if item.stock <= item.min_stock
         ]
-
-
-    

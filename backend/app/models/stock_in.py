@@ -6,7 +6,7 @@ from app.core.database import Base
 class StockIn(Base):
     __tablename__ = "stock_in"
     
-    id = Column(Integer, primary-key=True)
-    item_id = Column(Integer, ForeignKey("items_id"))
-    qty = Column(integer)
+    id = Column(Integer, primary_key=True)
+    item_id = Column(Integer, ForeignKey("items.id"))
+    qty = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.item import item
-from app.models.stock_in import StokIn
+from app.models.item import Item
+from app.models.stock_in import StockIn
 
 router = APIRouter(prefix="/stock-in", tags=["Stock In"])
 
