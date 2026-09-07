@@ -9,7 +9,7 @@ router = APIRouter(prefix="/stock-in", tags=["Stock In"])
 
 @router.post("")
 def stock_in(
-        item_id: Int,
+        item_id: int,
         qty: int,
         db: Session = Depends(get_db)
 ):
