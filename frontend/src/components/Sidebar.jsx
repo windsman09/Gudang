@@ -1,38 +1,61 @@
 import {
   LayoutDashboard,
-  Package,
-  ArrowDownCircle,
-  ArrowUpCircle,
+  PackagePlus,
+  PackageMinus,
+  Home,
 } from "lucide-react";
 
-export default function Sidebar() {
+export default function Sidebar({ activePage, setActivePage }) {
+  const menus = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      id: "barang-masuk",
+      label: "Barang Masuk",
+      icon: PackagePlus,
+    },
+    {
+      id: "barang-keluar",
+      label: "Barang Keluar",
+      icon: PackageMinus,
+    },
+    {
+      id: "home",
+      label: "Home",
+      icon: Home,
+    },
+  ];
+
   return (
-    <div className="w-64 bg-slate-900 text-white min-h-screen">
-      <div className="p-5 text-2xl font-bold border-b border-slate-700">
+    <aside className="w-64 min-h-screen bg-slate-900 text-white p-4">
+      <h1 className="text-xl font-bold mb-6">
         Gudang
-      </div>
+      </h1>
 
-      <nav className="p-4 space-y-2">
-        <div className="flex items-center gap-3 p-3 rounded hover:bg-slate-800 cursor-pointer">
-          <LayoutDashboard size={20} />
-          <span>Dashboard</span>
-        </div>
+      <nav className="space-y-2">
+        {menus.map((menu) => {
+          const Icon = menu.icon;
 
-        <div className="flex items-center gap-3 p-3 rounded hover:bg-slate-800 cursor-pointer">
-          <Package size={20} />
-          <span>Data Barang</span>
-        </div>
-
-        <div className="flex items-center gap-3 p-3 rounded hover:bg-slate-800 cursor-pointer">
-          <ArrowDownCircle size={20} />
-          <span>Barang Masuk</span>
-        </div>
-
-        <div className="flex items-center gap-3 p-3 rounded hover:bg-slate-800 cursor-pointer">
-          <ArrowUpCircle size={20} />
-          <span>Barang Keluar</span>
-        </div>
+          return (
+            <button
+              key={menu.id}
+              type="button"
+              onClick={() => setActivePage(menu.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition ${
+                activePage === menu.id
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-300 hover:bg-slate-800"
+              }`}
+            >
+              <Icon size={20} />
+              <span>{menu.label}</span>
+            </button>
+          );
+        })}
       </nav>
-    </div>
+    </aside>
   );
 }
