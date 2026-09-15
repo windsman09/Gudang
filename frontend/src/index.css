@@ -111,3 +111,14 @@ code {
 }
 
 @import "tailwindcss";
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: borde-box;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f4f6f9;
+}
