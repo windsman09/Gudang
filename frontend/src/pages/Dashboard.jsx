@@ -1,47 +1,235 @@
-import {
-  Package,
-  ArrowDownToLine,
-  ArrowUpFromLine
-} from "lucide-react";
+import {useEffect, useMemo, useState} from "react";
+import api from "..api/api";
+function Dasboard(){
+  const [items, setitems] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading,setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const respons = await api.get("/items");
+      const result = Array.isArray(response.data)
+      ? response.data
+      : response.data.items || [];
+  setItems(result);
+    } catch (err) {
+      console.error("Gagal mengambil data barang:", err);
+      serError(
+        err.response?.data?.detail ||
+          "Data barang gagal diambil. Pastikan FastAPI berjalan."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(()=>{
+    fetchItems();
 
-export default function Dashboard() {
-  return (
-    <div className="p-6 bg-slate-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">
-        Dashboard Gudang
-      </h1>
+  },[]);
+ const filteredItems = useMemo(() => {
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl shadow p-5">
-          <Package className="text-blue-500" />
-          <p className="mt-3 text-gray-500">
-            Total Barang
-          </p>
-          <h2 className="text-3xl font-bold">
-            1,250
-          </h2>
-        </div>
+const keyword = search.toLowerCase().trim();
 
-        <div className="bg-white rounded-2xl shadow p-5">
-          <ArrowDownToLine className="text-green-500" />
-          <p className="mt-3 text-gray-500">
-            Barang Masuk
-          </p>
-          <h2 className="text-3xl font-bold">
-            150
-          </h2>
-        </div>
+if (!keyword) { return items; }
 
-        <div className="bg-white rounded-2xl shadow p-5">
-          <ArrowUpFromLine className="text-red-500" />
-          <p className="mt-3 text-gray-500">
-            Barang Keluar
-          </p>
-          <h2 className="text-3xl font-bold">
-            95
-          </h2>
-        </div>
-      </div>
+return items.filter((item) => {
+
+const kode = String(
+  item.kode || item.kode_barang || ""
+).toLowerCase();
+
+const nama = String(
+  item.nama || item.nama_barang || ""
+).toLowerCase();
+
+const kategori = String(
+  item.kategori || ""
+).toLowerCase();
+
+const lokasi = String(
+  item.lokasi || ""
+).toLowerCase();
+
+return (
+  kode.includes(keyword) ||
+  nama.includes(keyword) ||
+  kategori.includes(keyword) ||
+  lokasi.includes(keyword)
+);
+
+
+});
+
+}, [items, search]); 
+return(
+const totalJenisBarang = items.length;
+
+const totalStok = items.reduce((total, item) => {
+
+return total + Number(item.stok || 0);
+
+}, 0);
+
+const stokMinimum = items.filter((item) => {
+
+const stok = Number(item.stok || 0);
+
+const minimum = Number( item.stok_minimum || item.minimum_stok || 10 );
+
+return stok <= minimum;
+
+}).length;
+<div className="dashboard">
+  <div className="dashboar-header"
+  <div>
+    <h1> Dashboard Gudang</h1>
+    <p>Ringkasan data persediaan barang.</p>
     </div>
-  );
+<<button type="type="button"
+className="refresh-button"
+    onClick={fetchItems}
+    disabled={loading}
+    >
+{loading ? "Memat..." :  "Muat Ulang"}
+    </button>
+  </div>
+  <div className="card">
+  <h3>Jenis Barang</h3>
+  <p className="card-number">
+      {totalJenisBarang}
+  </p>
+      <span>Jumlah barang terdaftar</span>
+  </div>
+  <div className="card">
+      <h3>Total Stok</h3>
+      <p className="card-number">
+        {totalStok}
+        </p>
+      <span>Total sekuruh stok barang</span>
+      </div>
+  <div className="card">
+  <h3>Stok Minimum</h3>
+  <p  className="card-number">
+        {stokMinimum}
+  </p>
+        <span>barang yg perlu diperiksa</span>
+  </div>
+  <div className="card">
+        <h3>Status API</h3>
+        <p className="card-status">
+          {error? "Terputus"
+            : loading? "Memuat"
+            : "Terhubung"}
+          </p>
+        <span>Koneksi FastAPI</span>
+        </div>
+)<div className="table-container">
+<div className ="tabel-header">
+    <h2>Data Barang</h2>
+    <<input type="text"
+    className="search-input"
+    placeholder="Cari barang..."
+    value={search}
+    onChange={(event)=>
+    setSearch(event.target.value)
+    }
+    />
+    </div>
+{error && (
+<div className="error-message">
+  <strong>Terjadi kesalahan: </strong>
+  {error}
+  <<button type="button"
+    onClick={fetchItems}
+    >
+    Coba Lagi
+    </button>
+  </div>
+)}
+{loading && (
+<p className="loading-message">
+  Mengambil data barang...
+  </p>
+)}
+!loading &&
+  !error &&
+  filteredItems.length === 0 && (
+  <p className="empty-message">
+    {search? "Barang yang dicari tidak ditemukan."
+      : "Data barang masih kosong."}
+    </p>
+  )}
+
+{!loading &&
+!error &&
+filteredItems.length > 0 &&(
+<div className="table-responsive">
+    <table>
+      <thread>
+        <tr>
+          <th>No.</th>
+          <th>Kode</th>
+          <th>Kategori</th>
+          <th>Stok</th>
+          <th>Lokasi</th>
+          <th>Status</th>
+          </tr>
+        </thread>
+      <tbody>
+        {filteredItems.map((item, index) => {
+            const stok = Number(
+              item.stok || 0
+            );
+            const minimum = Number(
+              item.stok_minimum ||
+                item.minimum_stok ||
+                10
+            );
+
+            const statusRendah =
+            stok <= minimum;
+            return (
+            <<tr>key={
+                item.id ||
+                  item.kode ||
+                  index
+              }
+              >
+              <td>{index +1}</td>
+              <td>
+                {item.kode ||
+                  item.kode_barang ||
+                  "_"}
+                </td>
+              <td>
+                {item.nama ||
+                  item.nama_barang ||
+                  "_"}
+                </td>
+              <td>{stock}</td>
+              <td>{item.lokasi || "_"}</td>
+              <td>
+                <span
+                className={
+                statusRendah? "status status-low"
+                : "status status-available"
+                }
+                >
+                  {statusRendah
+                    ? "Stok Rendah"
+                    : "Tersedia"}</span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+)}
+</div>
+</div>
+);
 }
+export default Dashboard;
