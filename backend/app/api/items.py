@@ -10,6 +10,15 @@ router = APIRouter(
     tags=["Items"]
 )
 
+
+@router.get("")
+def get_items(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    return ItemService.get_all(db)
+
+
 @router.delete("/{item_id}")
 def delete_item(
     item_id: int,
