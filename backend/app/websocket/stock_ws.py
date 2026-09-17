@@ -1,5 +1,6 @@
 from fastapi import WebSocket
 
+
 connections = []
 
 
@@ -8,13 +9,15 @@ async def connect(ws: WebSocket):
     connections.append(ws)
 
 
+async def disconnect(ws: WebSocket):
+    if ws in connections:
+        connections.remove(ws)
+
+
 async def broadcast(data):
-    for conn in connections:
-        await conn.send_json(data)
-
-
-await broadcast({
-    "type": "stock_update",
-    "item_id": item.id,
-    "stock": item.stock
-})
+    for conn in connections.copy():
+        try:
+            await conn.send_json(data)
+        except Exception:
+            if conn in connections:
+                connections.remove(conn)

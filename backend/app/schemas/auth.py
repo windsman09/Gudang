@@ -5,5 +5,5 @@ class LoginRequest(BaseModel):
     password: str
 
 class LoginResponse(BaseModel):
-    acces_token: str
+    access_token: str
     token_type: str
