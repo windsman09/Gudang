@@ -1,46 +1,40 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { login } from "../services/api";
 
-export default function Login() {
-  const navigate = useNavigate();
-
-  const [username, setUsername] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [error, setError] =
-    useState("");
+export default function Login({ onLogin }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin(e) {
     e.preventDefault();
 
     setError("");
+    setLoading(true);
 
     try {
-      const data = await login(
-        username,
-        password
-      );
+      const data = await login(username, password);
 
       localStorage.setItem(
         "access_token",
         data.access_token
       );
 
-      navigate("/dashboard");
+      onLogin();
 
     } catch (error) {
-      setError(error.message);
+      setError(
+        error.message || "Login gagal"
+      );
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100">
-
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow">
 
         <h1 className="text-2xl font-bold mb-6">
@@ -65,6 +59,7 @@ export default function Login() {
               }
               className="w-full border rounded-lg px-3 py-2"
               placeholder="Username"
+              required
             />
           </div>
 
@@ -81,6 +76,7 @@ export default function Login() {
               }
               className="w-full border rounded-lg px-3 py-2"
               placeholder="Password"
+              required
             />
           </div>
 
@@ -92,15 +88,15 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
           >
-            Login
+            {loading ? "Login..." : "Login"}
           </button>
 
         </form>
 
       </div>
-
     </div>
   );
 }

@@ -1,39 +1,43 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  Package,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Search,
+} from "lucide-react";
+
 import api from "../api/api";
 
-function Dashboard() {
+export default function Dashboard() {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchItems = async () => {
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  async function fetchItems() {
     try {
       setLoading(true);
       setError("");
 
       const response = await api.get("/items");
 
-      const result = Array.isArray(response.data)
-        ? response.data
-        : response.data.items || [];
+      setItems(response.data);
+    } catch (error) {
+      console.error("Gagal mengambil data barang:", error);
 
-      setItems(result);
-    } catch (err) {
-      console.error("Gagal mengambil data barang:", err);
-
-      setError(
-        err.response?.data?.detail ||
-          "Data barang gagal diambil. Pastikan FastAPI berjalan."
-      );
+      if (error.response?.status === 401) {
+        setError("Sesi login sudah tidak valid.");
+      } else {
+        setError("Gagal mengambil data barang.");
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
+  }
 
   const filteredItems = useMemo(() => {
     const keyword = search.toLowerCase().trim();
@@ -44,15 +48,23 @@ function Dashboard() {
 
     return items.filter((item) => {
       const kode = String(
-        item.kode || item.kode_barang || ""
+        item.item_code ||
+          item.kode_barang ||
+          item.kode ||
+          ""
       ).toLowerCase();
 
       const nama = String(
-        item.nama || item.nama_barang || ""
+        item.item_name ||
+          item.nama_barang ||
+          item.nama ||
+          ""
       ).toLowerCase();
 
       const kategori = String(
-        item.kategori || ""
+        item.category ||
+          item.kategori ||
+          ""
       ).toLowerCase();
 
       const lokasi = String(
@@ -70,9 +82,11 @@ function Dashboard() {
 
   const totalJenisBarang = items.length;
 
-  const totalStok = items.reduce((total, item) => {
-    return total + Number(item.stok || 0);
-  }, 0);
+  const totalStok = items.reduce(
+    (total, item) =>
+      total + Number(item.stok || 0),
+    0
+  );
 
   const stokMinimum = items.filter((item) => {
     const stok = Number(item.stok || 0);
@@ -87,209 +101,289 @@ function Dashboard() {
   }).length;
 
   return (
-    <div className="dashboard">
+    <div className="min-h-screen bg-slate-100 p-6">
 
       {/* Header */}
-      <div className="dashboard-header">
-        <div>
-          <h1>Dashboard Gudang</h1>
-          <p>Ringkasan data persediaan barang.</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-slate-800">
+          Dashboard Gudang
+        </h1>
 
-        <button
-          type="button"
-          className="refresh-button"
-          onClick={fetchItems}
-          disabled={loading}
-        >
-          {loading ? "Memuat..." : "Muat Ulang"}
-        </button>
+        <p className="mt-1 text-slate-500">
+          Ringkasan dan daftar barang gudang
+        </p>
       </div>
 
       {/* Cards */}
-      <div className="dashboard-cards">
+      <div className="mb-6 grid gap-6 md:grid-cols-3">
 
-        <div className="card">
-          <h3>Jenis Barang</h3>
-          <p className="card-number">
-            {totalJenisBarang}
-          </p>
-          <span>Jumlah barang terdaftar</span>
+        <div className="rounded-xl bg-white p-6 shadow">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500">
+                Total Jenis Barang
+              </p>
+
+              <p className="mt-1 text-3xl font-bold">
+                {totalJenisBarang}
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-blue-100 p-3 text-blue-600">
+              <Package size={24} />
+            </div>
+          </div>
         </div>
 
-        <div className="card">
-          <h3>Total Stok</h3>
-          <p className="card-number">
-            {totalStok}
-          </p>
-          <span>Total seluruh stok barang</span>
+        <div className="rounded-xl bg-white p-6 shadow">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500">
+                Total Stok
+              </p>
+
+              <p className="mt-1 text-3xl font-bold">
+                {totalStok}
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-green-100 p-3 text-green-600">
+              <ArrowDownToLine size={24} />
+            </div>
+          </div>
         </div>
 
-        <div className="card">
-          <h3>Stok Minimum</h3>
-          <p className="card-number">
-            {stokMinimum}
-          </p>
-          <span>Barang yang perlu diperiksa</span>
-        </div>
+        <div className="rounded-xl bg-white p-6 shadow">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500">
+                Stok Minimum
+              </p>
 
-        <div className="card">
-          <h3>Status API</h3>
-          <p className="card-status">
-            {error
-              ? "Terputus"
-              : loading
-                ? "Memuat"
-                : "Terhubung"}
-          </p>
-          <span>Koneksi FastAPI</span>
+              <p className="mt-1 text-3xl font-bold">
+                {stokMinimum}
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-orange-100 p-3 text-orange-600">
+              <ArrowUpFromLine size={24} />
+            </div>
+          </div>
         </div>
 
       </div>
 
-      {/* Table */}
-      <div className="table-container">
+      {/* Daftar Barang */}
+      <div className="rounded-xl bg-white p-6 shadow">
 
-        <div className="table-header">
-          <h2>Data Barang</h2>
+        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Cari barang..."
-            value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
-          />
+          <div>
+            <h2 className="text-xl font-semibold text-slate-800">
+              Daftar Barang
+            </h2>
+
+            <p className="text-sm text-slate-500">
+              Cari barang berdasarkan kode, nama, kategori, atau lokasi
+            </p>
+          </div>
+
+          {/* Search */}
+          <div className="relative w-full md:w-80">
+
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              placeholder="Cari barang..."
+              className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+
+          </div>
+
         </div>
 
         {/* Error */}
         {error && (
-          <div className="error-message">
-            <strong>Terjadi kesalahan: </strong>
+          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">
             {error}
-
-            <button
-              type="button"
-              onClick={fetchItems}
-            >
-              Coba Lagi
-            </button>
           </div>
         )}
 
         {/* Loading */}
-        {loading && (
-          <p className="loading-message">
-            Mengambil data barang...
-          </p>
-        )}
+        {loading ? (
+          <div className="py-10 text-center text-slate-500">
+            Memuat data barang...
+          </div>
+        ) : (
 
-        {/* Empty */}
-        {!loading &&
-          !error &&
-          filteredItems.length === 0 && (
-            <p className="empty-message">
-              {search
-                ? "Barang yang dicari tidak ditemukan."
-                : "Data barang masih kosong."}
-            </p>
-          )}
+          <div className="overflow-x-auto">
 
-        {/* Table data */}
-        {!loading &&
-          !error &&
-          filteredItems.length > 0 && (
-            <div className="table-responsive">
+            <table className="w-full text-left text-sm">
 
-              <table>
-                <thead>
+              <thead className="border-b bg-slate-50">
+                <tr>
+                  <th className="px-4 py-3">
+                    No
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Kode Barang
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Nama Barang
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Kategori
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Stok
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Satuan
+                  </th>
+
+                  <th className="px-4 py-3">
+                    Lokasi
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {filteredItems.length === 0 ? (
+
                   <tr>
-                    <th>No.</th>
-                    <th>Kode</th>
-                    <th>Nama</th>
-                    <th>Kategori</th>
-                    <th>Stok</th>
-                    <th>Lokasi</th>
-                    <th>Status</th>
+                    <td
+                      colSpan="7"
+                      className="px-4 py-10 text-center text-slate-500"
+                    >
+                      {search
+                        ? `Barang "${search}" tidak ditemukan`
+                        : "Belum ada data barang"}
+                    </td>
                   </tr>
-                </thead>
 
-                <tbody>
-                  {filteredItems.map((item, index) => {
-                    const stok = Number(
-                      item.stok || 0
-                    );
+                ) : (
 
-                    const minimum = Number(
-                      item.stok_minimum ||
-                        item.minimum_stok ||
-                        10
-                    );
+                  filteredItems.map((item, index) => {
 
-                    const statusRendah =
+                    const kode =
+                      item.item_code ||
+                      item.kode_barang ||
+                      item.kode ||
+                      "-";
+
+                    const nama =
+                      item.item_name ||
+                      item.nama_barang ||
+                      item.nama ||
+                      "-";
+
+                    const kategori =
+                      item.category ||
+                      item.kategori ||
+                      "-";
+
+                    const stok =
+                      Number(item.stok || 0);
+
+                    const unit =
+                      item.unit ||
+                      item.satuan ||
+                      "-";
+
+                    const lokasi =
+                      item.lokasi ||
+                      "-";
+
+                    const minimum =
+                      Number(
+                        item.stok_minimum ||
+                          item.minimum_stok ||
+                          10
+                      );
+
+                    const stokRendah =
                       stok <= minimum;
 
                     return (
                       <tr
-                        key={
-                          item.id ||
-                          item.kode ||
-                          index
-                        }
+                        key={item.id}
+                        className="border-b hover:bg-slate-50"
                       >
-                        <td>{index + 1}</td>
 
-                        <td>
-                          {item.kode ||
-                            item.kode_barang ||
-                            "_"}
+                        <td className="px-4 py-3">
+                          {index + 1}
                         </td>
 
-                        <td>
-                          {item.nama ||
-                            item.nama_barang ||
-                            "_"}
+                        <td className="px-4 py-3 font-medium">
+                          {kode}
                         </td>
 
-                        <td>
-                          {item.kategori || "_"}
+                        <td className="px-4 py-3">
+                          {nama}
                         </td>
 
-                        <td>{stok}</td>
-
-                        <td>
-                          {item.lokasi || "_"}
+                        <td className="px-4 py-3">
+                          {kategori}
                         </td>
 
-                        <td>
+                        <td className="px-4 py-3">
                           <span
                             className={
-                              statusRendah
-                                ? "status status-low"
-                                : "status status-available"
+                              stokRendah
+                                ? "font-semibold text-red-600"
+                                : "text-slate-700"
                             }
                           >
-                            {statusRendah
-                              ? "Stok Rendah"
-                              : "Tersedia"}
+                            {stok}
                           </span>
                         </td>
+
+                        <td className="px-4 py-3">
+                          {unit}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {lokasi}
+                        </td>
+
                       </tr>
                     );
-                  })}
-                </tbody>
+                  })
 
-              </table>
+                )}
 
-            </div>
-          )}
+              </tbody>
+
+            </table>
+
+          </div>
+
+        )}
+
+        {/* Jumlah hasil */}
+        {!loading && (
+          <div className="mt-4 text-sm text-slate-500">
+            Menampilkan {filteredItems.length} dari{" "}
+            {items.length} barang
+          </div>
+        )}
 
       </div>
 
     </div>
   );
 }
-
-export default Dashboard;
