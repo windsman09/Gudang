@@ -1,28 +1,27 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+
 
 SECRET_KEY = "YOUR_SUPER_SECRET_KEY"
 ALGORITHM = "HS256"
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
-
 
 def hash_password(password: str):
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(
+        password.encode("utf-8"),
+        bcrypt.gensalt()
+    ).decode("utf-8")
 
 
 def verify_password(
     plain_password: str,
     hashed_password: str
 ):
-    return pwd_context.verify(
-        plain_password,
-        hashed_password
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8")
     )
 
 
@@ -30,7 +29,7 @@ def create_access_token(data: dict):
     payload = data.copy()
 
     payload["exp"] = (
-        datetime.utcnow() +
+        datetime.now(timezone.utc) +
         timedelta(hours=8)
     )
 

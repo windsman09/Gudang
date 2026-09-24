@@ -6,10 +6,9 @@ from app.core.security import decode_token
 
 security = HTTPBearer()
 
+
 def get_current_user(
-        credential: HTTPAuthorizationCredentials = Depends(
-        security
-    )
+    credential: HTTPAuthorizationCredentials = Depends(security)
 ):
     payload = decode_token(
         credential.credentials
@@ -20,4 +19,5 @@ def get_current_user(
             status_code=401,
             detail="Invalid token"
         )
-        return payload
+
+    return payload
