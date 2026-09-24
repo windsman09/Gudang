@@ -11,11 +11,8 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
 
-<<<<<<< HEAD
-=======
     console.log("JWT:", token ? "ADA" : "TIDAK ADA");
 
->>>>>>> origin/windows
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

@@ -1,18 +1,53 @@
-import { useState } from "react";
-import { ArrowDownToLine, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ArrowDownToLine,
+  Save,
+  Package,
+  RefreshCw,
+} from "lucide-react";
+import api from "../api/api";
 
 export default function BarangMasuk() {
+  const [items, setItems] = useState([]);
+  const [riwayat, setRiwayat] = useState([]);
+
   const [form, setForm] = useState({
-    kode_barang: "",
-    nama_barang: "",
+    item_id: "",
     jumlah: "",
-    supplier: "",
-    tanggal: "",
-    keterangan: "",
   });
 
-  const [dataBarangMasuk, setDataBarangMasuk] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingItems, setLoadingItems] = useState(true);
 
+  // =========================
+  // Ambil data barang
+  // =========================
+  const fetchItems = async () => {
+    try {
+      setLoadingItems(true);
+
+      const response = await api.get("/items");
+
+      setItems(response.data);
+    } catch (error) {
+      console.error("Gagal mengambil data barang:", error);
+
+      alert(
+        error.response?.data?.detail ||
+        "Gagal mengambil data barang"
+      );
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  // =========================
+  // Handle input
+  // =========================
   function handleChange(e) {
     const { name, value } = e.target;
 
@@ -22,106 +57,158 @@ export default function BarangMasuk() {
     }));
   }
 
-  function handleSubmit(e) {
+  // =========================
+  // Simpan barang masuk
+  // =========================
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    if (
-      !form.kode_barang ||
-      !form.nama_barang ||
-      !form.jumlah ||
-      !form.tanggal
-    ) {
-      alert("Kode, nama barang, jumlah, dan tanggal wajib diisi.");
+    if (!form.item_id) {
+      alert("Silakan pilih barang.");
       return;
     }
 
-    const dataBaru = {
-      id: Date.now(),
-      ...form,
-    };
+    if (!form.jumlah || Number(form.jumlah) <= 0) {
+      alert("Jumlah barang harus lebih dari 0.");
+      return;
+    }
 
-    setDataBarangMasuk((prev) => [
-      dataBaru,
-      ...prev,
-    ]);
+    try {
+      setLoading(true);
 
-    setForm({
-      kode_barang: "",
-      nama_barang: "",
-      jumlah: "",
-      supplier: "",
-      tanggal: "",
-      keterangan: "",
-    });
+      const response = await api.post("/stock-in", null, {
+        params: {
+          item_id: Number(form.item_id),
+          qty: Number(form.jumlah),
+        },
+      });
+
+      alert(response.data.message);
+
+      // Reset form
+      setForm({
+        item_id: "",
+        jumlah: "",
+      });
+
+      // Refresh daftar barang agar stok terbaru tampil
+      await fetchItems();
+
+    } catch (error) {
+      console.error("Gagal menyimpan barang masuk:", error);
+
+      alert(
+        error.response?.data?.detail ||
+        "Gagal menyimpan barang masuk"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
+
+  // =========================
+  // Barang yang sedang dipilih
+  // =========================
+  const selectedItem = items.find(
+    (item) => String(item.id) === String(form.item_id)
+  );
 
   return (
     <div className="min-h-screen bg-slate-100 p-6">
 
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="rounded-lg bg-blue-600 p-3 text-white">
-          <ArrowDownToLine size={24} />
+      {/* ================= HEADER ================= */}
+      <div className="mb-6 flex items-center justify-between">
+
+        <div className="flex items-center gap-3">
+
+          <div className="rounded-xl bg-blue-600 p-3 text-white shadow">
+            <ArrowDownToLine size={24} />
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">
+              Barang Masuk
+            </h1>
+
+            <p className="text-sm text-slate-500">
+              Kelola transaksi barang yang masuk ke gudang
+            </p>
+          </div>
+
         </div>
 
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">
-            Barang Masuk
-          </h1>
+        <button
+          type="button"
+          onClick={fetchItems}
+          className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+        >
+          <RefreshCw size={16} />
+          Refresh
+        </button>
 
-          <p className="text-sm text-slate-500">
-            Kelola transaksi barang yang masuk ke gudang
-          </p>
-        </div>
       </div>
 
-      {/* Form */}
+
+      {/* ================= FORM ================= */}
       <div className="mb-6 rounded-xl bg-white p-6 shadow">
 
-        <h2 className="mb-5 text-lg font-semibold text-slate-800">
-          Tambah Barang Masuk
-        </h2>
+        <div className="mb-5 flex items-center gap-2">
+
+          <Package
+            size={20}
+            className="text-blue-600"
+          />
+
+          <h2 className="text-lg font-semibold text-slate-800">
+            Tambah Barang Masuk
+          </h2>
+
+        </div>
 
         <form onSubmit={handleSubmit}>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
 
-            {/* Kode Barang */}
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Kode Barang
+            {/* Pilih Barang */}
+            <div className="md:col-span-1">
+
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Barang
               </label>
 
-              <input
-                type="text"
-                name="kode_barang"
-                value={form.kode_barang}
+              <select
+                name="item_id"
+                value={form.item_id}
                 onChange={handleChange}
-                placeholder="Contoh: BRG-001"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-              />
+                disabled={loadingItems || loading}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              >
+
+                <option value="">
+                  {loadingItems
+                    ? "Memuat barang..."
+                    : "Pilih barang"}
+                </option>
+
+                {items.map((item) => (
+                  <option
+                    key={item.id}
+                    value={item.id}
+                  >
+                    {item.item_code} - {item.item_name}
+                  </option>
+                ))}
+
+              </select>
+
             </div>
 
-            {/* Nama Barang */}
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Nama Barang
-              </label>
-
-              <input
-                type="text"
-                name="nama_barang"
-                value={form.nama_barang}
-                onChange={handleChange}
-                placeholder="Nama barang"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-              />
-            </div>
 
             {/* Jumlah */}
             <div>
-              <label className="mb-1 block text-sm font-medium">
-                Jumlah
+
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Jumlah Barang
               </label>
 
               <input
@@ -130,149 +217,196 @@ export default function BarangMasuk() {
                 value={form.jumlah}
                 onChange={handleChange}
                 min="1"
-                placeholder="Jumlah barang"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
+                disabled={loading}
+                placeholder="Masukkan jumlah"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
-            </div>
 
-            {/* Supplier */}
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Supplier
-              </label>
-
-              <input
-                type="text"
-                name="supplier"
-                value={form.supplier}
-                onChange={handleChange}
-                placeholder="Nama supplier"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-              />
-            </div>
-
-            {/* Tanggal */}
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Tanggal Masuk
-              </label>
-
-              <input
-                type="date"
-                name="tanggal"
-                value={form.tanggal}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-              />
-            </div>
-
-            {/* Keterangan */}
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Keterangan
-              </label>
-
-              <input
-                type="text"
-                name="keterangan"
-                value={form.keterangan}
-                onChange={handleChange}
-                placeholder="Keterangan"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-              />
             </div>
 
           </div>
 
+
+          {/* Informasi barang */}
+          {selectedItem && (
+            <div className="mt-5 rounded-lg bg-slate-50 p-4">
+
+              <div className="grid gap-4 sm:grid-cols-3">
+
+                <div>
+                  <p className="text-xs text-slate-500">
+                    Kode Barang
+                  </p>
+
+                  <p className="mt-1 font-semibold text-slate-800">
+                    {selectedItem.item_code}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-500">
+                    Nama Barang
+                  </p>
+
+                  <p className="mt-1 font-semibold text-slate-800">
+                    {selectedItem.item_name}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-500">
+                    Stok Saat Ini
+                  </p>
+
+                  <p className="mt-1 font-semibold text-blue-600">
+                    {selectedItem.stock} {selectedItem.unit || ""}
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+
           {/* Button */}
-          <div className="mt-5 flex justify-end">
+          <div className="mt-6 flex justify-end">
+
             <button
               type="submit"
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-white hover:bg-blue-700"
+              disabled={loading}
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
+
               <Save size={18} />
-              Simpan
+
+              {loading
+                ? "Menyimpan..."
+                : "Simpan Barang Masuk"}
+
             </button>
+
           </div>
 
         </form>
+
       </div>
 
-      {/* Table */}
+
+      {/* ================= INFORMASI ================= */}
       <div className="rounded-xl bg-white p-6 shadow">
 
-        <div className="mb-4">
+        <div className="mb-5">
+
           <h2 className="text-lg font-semibold text-slate-800">
-            Riwayat Barang Masuk
+            Informasi Stok
           </h2>
 
           <p className="text-sm text-slate-500">
-            Daftar transaksi barang yang telah dimasukkan
+            Data barang dan stok terbaru dari database
           </p>
+
         </div>
 
+
+        {/* ================= TABLE ================= */}
         <div className="overflow-x-auto">
 
           <table className="w-full text-left text-sm">
 
             <thead className="border-b bg-slate-50">
+
               <tr>
-                <th className="px-4 py-3">No</th>
-                <th className="px-4 py-3">Kode</th>
-                <th className="px-4 py-3">Nama Barang</th>
-                <th className="px-4 py-3">Jumlah</th>
-                <th className="px-4 py-3">Supplier</th>
-                <th className="px-4 py-3">Tanggal</th>
-                <th className="px-4 py-3">Keterangan</th>
+
+                <th className="px-4 py-3 font-semibold text-slate-600">
+                  No
+                </th>
+
+                <th className="px-4 py-3 font-semibold text-slate-600">
+                  Kode
+                </th>
+
+                <th className="px-4 py-3 font-semibold text-slate-600">
+                  Nama Barang
+                </th>
+
+                <th className="px-4 py-3 font-semibold text-slate-600">
+                  Kategori
+                </th>
+
+                <th className="px-4 py-3 font-semibold text-slate-600">
+                  Lokasi
+                </th>
+
+                <th className="px-4 py-3 text-right font-semibold text-slate-600">
+                  Stok
+                </th>
+
               </tr>
+
             </thead>
 
             <tbody>
 
-              {dataBarangMasuk.length === 0 ? (
+              {loadingItems ? (
+
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="6"
                     className="px-4 py-8 text-center text-slate-500"
                   >
-                    Belum ada data barang masuk
+                    Memuat data barang...
                   </td>
                 </tr>
+
+              ) : items.length === 0 ? (
+
+                <tr>
+                  <td
+                    colSpan="6"
+                    className="px-4 py-8 text-center text-slate-500"
+                  >
+                    Belum ada barang di database
+                  </td>
+                </tr>
+
               ) : (
-                dataBarangMasuk.map((item, index) => (
+
+                items.map((item, index) => (
+
                   <tr
                     key={item.id}
-                    className="border-b hover:bg-slate-50"
+                    className="border-b last:border-0 hover:bg-slate-50"
                   >
+
                     <td className="px-4 py-3">
                       {index + 1}
                     </td>
 
-                    <td className="px-4 py-3 font-medium">
-                      {item.kode_barang}
+                    <td className="px-4 py-3 font-medium text-slate-800">
+                      {item.item_code}
                     </td>
 
                     <td className="px-4 py-3">
-                      {item.nama_barang}
+                      {item.item_name}
                     </td>
 
                     <td className="px-4 py-3">
-                      {item.jumlah}
+                      {item.category || "-"}
                     </td>
 
                     <td className="px-4 py-3">
-                      {item.supplier || "-"}
+                      {item.location || "-"}
                     </td>
 
-                    <td className="px-4 py-3">
-                      {item.tanggal}
+                    <td className="px-4 py-3 text-right font-semibold text-blue-600">
+                      {item.stock} {item.unit || ""}
                     </td>
 
-                    <td className="px-4 py-3">
-                      {item.keterangan || "-"}
-                    </td>
                   </tr>
+
                 ))
+
               )}
 
             </tbody>
@@ -280,6 +414,7 @@ export default function BarangMasuk() {
           </table>
 
         </div>
+
       </div>
 
     </div>

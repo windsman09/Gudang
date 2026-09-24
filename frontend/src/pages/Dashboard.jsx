@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+
+
 import {
   Package,
   ArrowDownToLine,
@@ -190,25 +192,21 @@ export default function Dashboard() {
 
           {/* Search */}
           <div className="relative w-full md:w-80">
-
             <Search
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
 
             <input
               type="text"
               value={search}
-              onChange={(e) =>
-                setSearch(e.target.value)
-              }
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari barang..."
-              className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
-
           </div>
-
-        </div>
+          </div>
+                
 
         {/* Error */}
         {error && (
