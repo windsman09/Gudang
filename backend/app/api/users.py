@@ -4,6 +4,8 @@ import bcrypt
 
 from app.core.database import get_db
 from app.models.user import User
+from app.core.dependencies import get_current_user
+
 
 router = APIRouter(
     prefix="/users",
@@ -44,4 +46,14 @@ def create_user(
     return {
         "id": user.id,
         "username": user.username
+    }
+
+
+@router.get("/me")
+def get_my_profile(
+    current_user=Depends(get_current_user)
+):
+    return {
+        "username": current_user["username"],
+        "role": current_user["role"]
     }
