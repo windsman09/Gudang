@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Eye, EyeOff, LockKeyhole, LogIn, UserRound } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  LogIn,
+  UserRound,
+} from "lucide-react";
 
 import { login } from "../services/api";
 
@@ -19,10 +25,7 @@ export default function Login({ onLogin }) {
     try {
       const data = await login(username, password);
 
-      localStorage.setItem(
-        "access_token",
-        data.access_token
-      );
+      localStorage.setItem("access_token", data.access_token);
 
       onLogin();
     } catch (error) {
@@ -44,9 +47,9 @@ export default function Login({ onLogin }) {
       {/* Login Card */}
       <div className="relative w-full max-w-md">
 
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 px-8 py-8">
 
-          {/* Logo / Header */}
+          {/* Header */}
           <div className="text-center mb-8">
 
             <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30">
@@ -67,13 +70,11 @@ export default function Login({ onLogin }) {
           </div>
 
           {/* Form */}
-          <form
-            onSubmit={handleLogin}
-            className="space-y-5"
-          >
+          <form onSubmit={handleLogin}>
 
             {/* Username */}
-            <div>
+            <div className="mb-5">
+
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Username
               </label>
@@ -82,16 +83,14 @@ export default function Login({ onLogin }) {
 
                 <UserRound
                   size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                 />
 
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) =>
-                    setUsername(e.target.value)
-                  }
-                  className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-slate-50 focus:bg-white"
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full h-12 pl-10 pr-4 border border-slate-200 rounded-xl outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-slate-50 focus:bg-white"
                   placeholder="Masukkan username"
                   autoComplete="username"
                   required
@@ -101,7 +100,8 @@ export default function Login({ onLogin }) {
             </div>
 
             {/* Password */}
-            <div>
+            <div className="mb-5">
+
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Password
               </label>
@@ -110,16 +110,14 @@ export default function Login({ onLogin }) {
 
                 <LockKeyhole
                   size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                 />
 
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) =>
-                    setPassword(e.target.value)
-                  }
-                  className="w-full pl-25 pr-11 py-3 border border-slate-200 rounded-xl outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-slate-50 focus:bg-white"
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-12 pl-10 pr-11 border border-slate-200 rounded-xl outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-slate-50 focus:bg-white"
                   placeholder="Masukkan password"
                   autoComplete="current-password"
                   required
@@ -127,9 +125,7 @@ export default function Login({ onLogin }) {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
                   aria-label={
                     showPassword
@@ -149,7 +145,7 @@ export default function Login({ onLogin }) {
 
             {/* Error */}
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+              <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                 <p className="text-sm text-red-600">
                   {error}
                 </p>
@@ -160,7 +156,7 @@ export default function Login({ onLogin }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-3 rounded-xl transition-all shadow-lg shadow-blue-600/20 disabled:bg-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
+              className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-xl transition-all shadow-lg shadow-blue-600/20 disabled:bg-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
