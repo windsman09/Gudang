@@ -19,6 +19,30 @@ def get_items(
     return ItemService.get_all(db)
 
 
+@router.post("")
+def create_item(
+    payload: ItemCreate, 
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    try:
+        item = ItemService.create(
+            db,
+            payload
+        )
+
+        return {
+            "message": "Barang berhasil ditambahkan",
+            "item": item
+        }
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
 @router.delete("/{item_id}")
 def delete_item(
     item_id: int,

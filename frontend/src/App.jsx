@@ -4,6 +4,7 @@ import Sidebar from "./components/Sidebar";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Barang from "./pages/Barang"
 import Home from "./pages/Home";
 import BarangMasuk from "./pages/BarangMasuk";
 import BarangKeluar from "./pages/BarangKeluar";
@@ -15,7 +16,12 @@ function App() {
 
   const [activePage, setActivePage] = useState("dashboard");
 
-  // Kalau belum login, tampilkan halaman Login
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    setIsLoggedIn(false);
+  };
+
+  // Kalau belum login, tampilkan Login
   if (!isLoggedIn) {
     return (
       <Login
@@ -24,10 +30,18 @@ function App() {
     );
   }
 
+  
   const renderPage = () => {
     switch (activePage) {
       case "dashboard":
-        return <Dashboard />;
+        return (
+          <Dashboard
+            onLogout={handleLogout}
+          />
+        );
+
+      case "barang":
+        return <Barang />;
 
       case "barang-masuk":
         return <BarangMasuk />;
@@ -39,7 +53,7 @@ function App() {
         return <Home />;
 
       default:
-        return <Dashboard />;
+        return <Dashboard onLogout={handleLogout} />;
     }
   };
 

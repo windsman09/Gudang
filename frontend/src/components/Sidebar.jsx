@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  Package,
   PackagePlus,
   PackageMinus,
   Home,
@@ -11,6 +12,11 @@ export default function Sidebar({ activePage, setActivePage }) {
       id: "dashboard",
       label: "Dashboard",
       icon: LayoutDashboard,
+    },
+    {
+      id: "barang",
+      label: "Master Barang",
+      icon: Package,
     },
     {
       id: "barang-masuk",

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import {
   Package,
@@ -13,9 +12,7 @@ import {
 
 import api from "../api/api";
 
-export default function Dashboard() {
-  const navigate = useNavigate();
-
+export default function Dashboard({ onLogout }) {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -24,11 +21,21 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
 
+  /*
+   * =========================
+   * Ambil data saat Dashboard dibuka
+   * =========================
+   */
   useEffect(() => {
     fetchItems();
     fetchProfile();
   }, []);
 
+  /*
+   * =========================
+   * Ambil daftar barang
+   * =========================
+   */
   async function fetchItems() {
     try {
       setLoading(true);
@@ -38,11 +45,15 @@ export default function Dashboard() {
 
       setItems(response.data);
     } catch (error) {
-      console.error("Gagal mengambil data barang:", error);
+      console.error(
+        "Gagal mengambil data barang:",
+        error
+      );
 
       if (error.response?.status === 401) {
         setError("Sesi login sudah tidak valid.");
-        handleLogout();
+
+        onLogout();
       } else {
         setError("Gagal mengambil data barang.");
       }
@@ -51,25 +62,33 @@ export default function Dashboard() {
     }
   }
 
+  /*
+   * =========================
+   * Ambil profil user
+   * =========================
+   */
   async function fetchProfile() {
     try {
       const response = await api.get("/users/me");
 
       setUser(response.data);
     } catch (error) {
-      console.error("Gagal mengambil profil:", error);
+      console.error(
+        "Gagal mengambil profil:",
+        error
+      );
 
       if (error.response?.status === 401) {
-        handleLogout();
+        onLogout();
       }
     }
   }
 
-  function handleLogout() {
-    localStorage.removeItem("access_token");
-    navigate("/login");
-  }
-
+  /*
+   * =========================
+   * Filter pencarian
+   * =========================
+   */
   const filteredItems = useMemo(() => {
     const keyword = search.toLowerCase().trim();
 
@@ -99,7 +118,9 @@ export default function Dashboard() {
       ).toLowerCase();
 
       const lokasi = String(
-        item.lokasi || ""
+        item.location ||
+          item.lokasi ||
+          ""
       ).toLowerCase();
 
       return (
@@ -111,20 +132,42 @@ export default function Dashboard() {
     });
   }, [items, search]);
 
+  /*
+   * =========================
+   * Statistik dashboard
+   * =========================
+   */
+
+  // Total jenis barang
   const totalJenisBarang = items.length;
 
+  // Total seluruh stok
   const totalStok = items.reduce(
-    (total, item) =>
-      total + Number(item.stok || 0),
+    (total, item) => {
+      return (
+        total +
+        Number(
+          item.stock ??
+            item.stok ??
+            0
+        )
+      );
+    },
     0
   );
 
+  // Jumlah barang yang stoknya minimum
   const stokMinimum = items.filter((item) => {
-    const stok = Number(item.stok || 0);
+    const stok = Number(
+      item.stock ??
+        item.stok ??
+        0
+    );
 
     const minimum = Number(
-      item.stok_minimum ||
-        item.minimum_stok ||
+      item.min_stock ??
+        item.stok_minimum ??
+        item.minimum_stok ??
         10
     );
 
@@ -134,9 +177,12 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-100">
 
-      {/* Header */}
+      {/* =========================
+          Header
+          ========================= */}
       <header className="flex items-center justify-between border-b bg-white px-6 py-4 shadow-sm">
 
+        {/* Judul */}
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
             Dashboard Gudang
@@ -147,18 +193,25 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* User */}
+        {/* =========================
+            User Profile
+            ========================= */}
         <div className="relative">
 
           <button
-            onClick={() => setShowProfile(!showProfile)}
+            type="button"
+            onClick={() =>
+              setShowProfile(!showProfile)
+            }
             className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-slate-100"
           >
 
             {/* Avatar */}
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white">
               {user?.username ? (
-                user.username.charAt(0).toUpperCase()
+                user.username
+                  .charAt(0)
+                  .toUpperCase()
               ) : (
                 <User size={20} />
               )}
@@ -182,15 +235,20 @@ export default function Dashboard() {
 
           </button>
 
-          {/* Dropdown Profile */}
+          {/* =========================
+              Dropdown Profile
+              ========================= */}
           {showProfile && (
             <div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
 
+              {/* Informasi User */}
               <div className="mb-4 flex items-center gap-3">
 
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-semibold text-white">
                   {user?.username
-                    ? user.username.charAt(0).toUpperCase()
+                    ? user.username
+                        .charAt(0)
+                        .toUpperCase()
                     : "U"}
                 </div>
 
@@ -206,10 +264,12 @@ export default function Dashboard() {
 
               </div>
 
+              {/* Logout */}
               <div className="border-t pt-3">
 
                 <button
-                  onClick={handleLogout}
+                  type="button"
+                  onClick={onLogout}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 transition hover:bg-red-50"
                 >
                   <LogOut size={18} />
@@ -228,20 +288,27 @@ export default function Dashboard() {
 
       </header>
 
-      {/* Content */}
+      {/* =========================
+          Content
+          ========================= */}
       <main className="p-6">
 
-        {/* Cards */}
+        {/* =========================
+            Cards Statistik
+            ========================= */}
         <div className="mb-6 grid gap-6 md:grid-cols-3">
 
+          {/* Total Jenis Barang */}
           <div className="rounded-xl bg-white p-6 shadow">
+
             <div className="mb-4 flex items-center justify-between">
+
               <div>
                 <p className="text-sm text-slate-500">
                   Total Jenis Barang
                 </p>
 
-                <p className="mt-1 text-3xl font-bold">
+                <p className="mt-1 text-3xl font-bold text-slate-800">
                   {totalJenisBarang}
                 </p>
               </div>
@@ -249,17 +316,22 @@ export default function Dashboard() {
               <div className="rounded-lg bg-blue-100 p-3 text-blue-600">
                 <Package size={24} />
               </div>
+
             </div>
+
           </div>
 
+          {/* Total Stok */}
           <div className="rounded-xl bg-white p-6 shadow">
+
             <div className="mb-4 flex items-center justify-between">
+
               <div>
                 <p className="text-sm text-slate-500">
                   Total Stok
                 </p>
 
-                <p className="mt-1 text-3xl font-bold">
+                <p className="mt-1 text-3xl font-bold text-slate-800">
                   {totalStok}
                 </p>
               </div>
@@ -267,17 +339,22 @@ export default function Dashboard() {
               <div className="rounded-lg bg-green-100 p-3 text-green-600">
                 <ArrowDownToLine size={24} />
               </div>
+
             </div>
+
           </div>
 
+          {/* Stok Minimum */}
           <div className="rounded-xl bg-white p-6 shadow">
+
             <div className="mb-4 flex items-center justify-between">
+
               <div>
                 <p className="text-sm text-slate-500">
                   Stok Minimum
                 </p>
 
-                <p className="mt-1 text-3xl font-bold">
+                <p className="mt-1 text-3xl font-bold text-slate-800">
                   {stokMinimum}
                 </p>
               </div>
@@ -285,14 +362,19 @@ export default function Dashboard() {
               <div className="rounded-lg bg-orange-100 p-3 text-orange-600">
                 <ArrowUpFromLine size={24} />
               </div>
+
             </div>
+
           </div>
 
         </div>
 
-        {/* Daftar Barang */}
+        {/* =========================
+            Daftar Barang
+            ========================= */}
         <div className="rounded-xl bg-white p-6 shadow">
 
+          {/* Header Daftar Barang */}
           <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
             <div>
@@ -301,7 +383,8 @@ export default function Dashboard() {
               </h2>
 
               <p className="text-sm text-slate-500">
-                Cari barang berdasarkan kode, nama, kategori, atau lokasi
+                Cari barang berdasarkan kode,
+                nama, kategori, atau lokasi
               </p>
             </div>
 
@@ -316,7 +399,9 @@ export default function Dashboard() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
                 placeholder="Cari barang..."
                 className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
@@ -332,19 +417,26 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Loading */}
+          {/* =========================
+              Loading / Table
+              ========================= */}
           {loading ? (
+
             <div className="py-10 text-center text-slate-500">
               Memuat data barang...
             </div>
+
           ) : (
 
             <div className="overflow-x-auto">
 
               <table className="w-full text-left text-sm">
 
+                {/* Table Header */}
                 <thead className="border-b bg-slate-50">
+
                   <tr>
+
                     <th className="px-4 py-3">
                       No
                     </th>
@@ -372,14 +464,18 @@ export default function Dashboard() {
                     <th className="px-4 py-3">
                       Lokasi
                     </th>
+
                   </tr>
+
                 </thead>
 
+                {/* Table Body */}
                 <tbody>
 
                   {filteredItems.length === 0 ? (
 
                     <tr>
+
                       <td
                         colSpan="7"
                         className="px-4 py-10 text-center text-slate-500"
@@ -388,96 +484,109 @@ export default function Dashboard() {
                           ? `Barang "${search}" tidak ditemukan`
                           : "Belum ada data barang"}
                       </td>
+
                     </tr>
 
                   ) : (
 
-                    filteredItems.map((item, index) => {
+                    filteredItems.map(
+                      (item, index) => {
 
-                      const kode =
-                        item.item_code ||
-                        item.kode_barang ||
-                        item.kode ||
-                        "-";
+                        const kode =
+                          item.item_code ||
+                          item.kode_barang ||
+                          item.kode ||
+                          "-";
 
-                      const nama =
-                        item.item_name ||
-                        item.nama_barang ||
-                        item.nama ||
-                        "-";
+                        const nama =
+                          item.item_name ||
+                          item.nama_barang ||
+                          item.nama ||
+                          "-";
 
-                      const kategori =
-                        item.category ||
-                        item.kategori ||
-                        "-";
+                        const kategori =
+                          item.category ||
+                          item.kategori ||
+                          "-";
 
-                      const stok =
-                        Number(item.stok || 0);
+                        const stok =
+                          Number(
+                            item.stock ??
+                              item.stok ??
+                              0
+                          );
 
-                      const unit =
-                        item.unit ||
-                        item.satuan ||
-                        "-";
+                        const unit =
+                          item.unit ||
+                          item.satuan ||
+                          "-";
 
-                      const lokasi =
-                        item.lokasi ||
-                        "-";
+                        const lokasi =
+                          item.location ||
+                          item.lokasi ||
+                          "-";
 
-                      const minimum =
-                        Number(
-                          item.stok_minimum ||
-                            item.minimum_stok ||
-                            10
+                        const minimum =
+                          Number(
+                            item.min_stock ??
+                              item.stok_minimum ??
+                              item.minimum_stok ??
+                              10
+                          );
+
+                        const stokRendah =
+                          stok <= minimum;
+
+                        return (
+
+                          <tr
+                            key={item.id}
+                            className="border-b hover:bg-slate-50"
+                          >
+
+                            <td className="px-4 py-3">
+                              {index + 1}
+                            </td>
+
+                            <td className="px-4 py-3 font-medium text-slate-800">
+                              {kode}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {nama}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {kategori}
+                            </td>
+
+                            <td className="px-4 py-3">
+
+                              <span
+                                className={
+                                  stokRendah
+                                    ? "font-semibold text-red-600"
+                                    : "text-slate-700"
+                                }
+                              >
+                                {stok}
+                              </span>
+
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {unit}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {lokasi}
+                            </td>
+
+                          </tr>
+
                         );
-
-                      const stokRendah =
-                        stok <= minimum;
-
-                      return (
-                        <tr
-                          key={item.id}
-                          className="border-b hover:bg-slate-50"
-                        >
-
-                          <td className="px-4 py-3">
-                            {index + 1}
-                          </td>
-
-                          <td className="px-4 py-3 font-medium">
-                            {kode}
-                          </td>
-
-                          <td className="px-4 py-3">
-                            {nama}
-                          </td>
-
-                          <td className="px-4 py-3">
-                            {kategori}
-                          </td>
-
-                          <td className="px-4 py-3">
-                            <span
-                              className={
-                                stokRendah
-                                  ? "font-semibold text-red-600"
-                                  : "text-slate-700"
-                              }
-                            >
-                              {stok}
-                            </span>
-                          </td>
-
-                          <td className="px-4 py-3">
-                            {unit}
-                          </td>
-
-                          <td className="px-4 py-3">
-                            {lokasi}
-                          </td>
-
-                        </tr>
-                      );
-                    })
+                      }
+                    )
 
                   )}
 
@@ -492,7 +601,8 @@ export default function Dashboard() {
           {/* Jumlah hasil */}
           {!loading && (
             <div className="mt-4 text-sm text-slate-500">
-              Menampilkan {filteredItems.length} dari{" "}
+              Menampilkan{" "}
+              {filteredItems.length} dari{" "}
               {items.length} barang
             </div>
           )}
