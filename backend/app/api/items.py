@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.services.item_service import ItemService
+from app.schemas.item import ItemCreate
 
 router = APIRouter(
     prefix="/items",
@@ -17,6 +18,30 @@ def get_items(
     current_user=Depends(get_current_user)
 ):
     return ItemService.get_all(db)
+
+
+@router.post("")
+def create_item(
+    payload: ItemCreate, 
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    try:
+        item = ItemService.create(
+            db,
+            payload
+        )
+
+        return {
+            "message": "Barang berhasil ditambahkan",
+            "item": item
+        }
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
 
 
 @router.delete("/{item_id}")

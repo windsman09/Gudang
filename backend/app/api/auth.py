@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+<<<<<<< HEAD
 
 from app.services.auth_service import AuthService
 from app.schemas.auth import LoginRequest, LoginResponse
@@ -12,7 +13,6 @@ from app.core.security import (
     create_access_token
 )
 from app.models.user import User
-
 
 
 router = APIRouter(
@@ -48,7 +48,8 @@ def login(
     access_token = create_access_token(
         data={
             "sub": str(user.id),
-            "username": user.username
+            "username": user.username,
+            "role": user.role
         }
     )
 

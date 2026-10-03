@@ -9,6 +9,7 @@ from app.api import users
 from app.api import items
 from app.api import stock_in
 from app.api import stock_out
+from app.models.stock_out import StockOut
 
 Base.metadata.create_all(bind=engine)
 

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-import bcrypt
 
 from app.core.database import get_db
+from app.core.security import hash_password
 from app.models.user import User
+
 
 router = APIRouter(
     prefix="/users",
@@ -27,14 +28,12 @@ def create_user(
             detail="Username sudah digunakan"
         )
 
-    hashed_password = bcrypt.hashpw(
-        password.encode("utf-8"),
-        bcrypt.gensalt()
-    ).decode("utf-8")
+    hashed_password = hash_password(password)
 
     user = User(
         username=username,
-        hashed_password=hashed_password
+        hashed_password=hashed_password,
+        role="user"
     )
 
     db.add(user)
@@ -43,5 +42,6 @@ def create_user(
 
     return {
         "id": user.id,
-        "username": user.username
+        "username": user.username,
+        "role": user.role
     }

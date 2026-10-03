@@ -4,31 +4,72 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.item import Item
 from app.models.stock_out import StockOut
+from app.schemas.stock_out import StockOutCreate
 
-router = APIRouter(prefix="/stock-out", tags=["Stock Out"])
+
+router = APIRouter(
+    prefix="/stock-out",
+    tags=["Barang Keluar"]
+)
 
 
-@router.post("")
-def stock_out(
-        item_id: int,
-        qty: int,
-        db: Session = Depends (get_db)
+@router.post("/")
+def create_stock_out(
+    payload: StockOutCreate,
+    db: Session = Depends(get_db)
 ):
-    item = db.query(Item).get(item_id)
+    item = db.query(Item).filter(
+        Item.id == payload.item_id
+    ).first()
 
-    if item.stock <qty:
+    if not item:
         raise HTTPException(
-            status_code=400,
-            detail="Stock tidak cukup"
+            status_code=404,
+            detail="Barang tidak ditemukan"
         )
 
-    item.stock -= qty
-    trx = StockOut(
-        item_id=item_id,
-        qty=qty,
+    if payload.qty <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Jumlah barang harus lebih dari 0"
+        )
+
+    if item.stock < payload.qty:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stok tidak cukup. Stok tersedia: {item.stock}"
+        )
+
+    # Kurangi stok barang
+    item.stock -= payload.qty
+
+    # Simpan transaksi barang keluar
+    stock_out = StockOut(
+        item_id=item.id,
+        qty=payload.qty,
+        destination=payload.destination,
+        note=payload.note
     )
 
-    db.add(trx)
+    db.add(stock_out)
     db.commit()
+    db.refresh(stock_out)
 
-    return {"message": "succes"}
+    return {
+        "message": "Barang keluar berhasil disimpan",
+        "item_id": item.id,
+        "item_name": item.item_name,
+        "qty": payload.qty,
+        "remaining_stock": item.stock
+    }
+
+
+@router.get("/")
+def get_stock_out(
+    db: Session = Depends(get_db)
+):
+    return (
+        db.query(StockOut)
+        .order_by(StockOut.created_at.desc())
+        .all()
+    )

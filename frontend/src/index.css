@@ -1,31 +1,33 @@
 @import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-html,
-body,
-#root {
-  min-height: 100%;
-}
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
 
-body {
-  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
-    sans-serif;
-  background: #f1f5f9;
-  color: #0f172a;
-}
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+      sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+  }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 
-button {
-  cursor: pointer;
+  button {
+    cursor: pointer;
+  }
 }
