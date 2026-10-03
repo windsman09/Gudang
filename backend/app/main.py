@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base
 from app.core.database import engine
 from app.api import auth
+from app.api import users
 
 from app.api import items
 from app.api import stock_in
@@ -28,3 +29,4 @@ app.include_router(items.router)
 app.include_router(stock_in.router)
 app.include_router(stock_out.router)
 app.include_router(auth.router)
+app.include_router(users.router)
