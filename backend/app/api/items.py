@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.services.item_service import ItemService
+from app.schemas.item import ItemCreate
 
 router = APIRouter(
     prefix="/items",
