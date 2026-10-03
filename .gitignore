@@ -1,0 +1,15 @@
+# Cache Python
+__pycache__/
+*.pyc
+
+# Database lokal
+*.db
+*.sqlite3
+
+# Environment variables & Virtual Environment
+.env
+venv/
+.venv/
+
+# Node modules (jika ada frontend/Vue)
+node_modules/
