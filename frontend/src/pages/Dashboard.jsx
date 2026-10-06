@@ -208,10 +208,12 @@ export default function Dashboard({ onLogout }) {
 
             {/* Avatar */}
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white">
-              {user?.username ? (
-                user.username
+              {user?.full_name ? (
+                user.full_name
                   .charAt(0)
                   .toUpperCase()
+              ) : user?.username ? (
+              user.username.charAt(0).topUpperCase()
               ) : (
                 <User size={20} />
               )}

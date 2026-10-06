@@ -1,7 +1,8 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.item import Item
-from app.schemas.item import ItemCreate
+from app.schemas.item import ItemCreate, ItemUpdate  # Adjust schema imports as needed
 
 
 class ItemService:
@@ -48,8 +49,9 @@ class ItemService:
         )
 
         if existing_item:
-            raise ValueError(
-                "Kode barang sudah digunakan"
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Kode barang sudah digunakan"
             )
 
         item = Item(
@@ -72,7 +74,7 @@ class ItemService:
     def update(
         db: Session,
         item_id: int,
-        payload: ItemCreate
+        payload: ItemUpdate
     ):
         item = (
             db.query(Item)
@@ -82,6 +84,22 @@ class ItemService:
 
         if not item:
             return None
+
+        # Cek apakah kode barang sudah dipakai barang lain
+        existing_item = (
+            db.query(Item)
+            .filter(
+                Item.item_code == payload.item_code,
+                Item.id != item_id
+            )
+            .first()
+        )
+
+        if existing_item:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Kode barang sudah digunakan"
+            )
 
         item.item_code = payload.item_code
         item.item_name = payload.item_name
@@ -129,10 +147,8 @@ class ItemService:
     def get_low_stock(
         db: Session
     ):
-        items = db.query(Item).all()
-
-        return [
-            item
-            for item in items
-            if item.stock <= item.min_stock
-        ]
+        return (
+            db.query(Item)
+            .filter(Item.stock <= Item.min_stock)
+            .all()
+        )
