@@ -14,6 +14,7 @@ router = APIRouter(
 def stock_in(
     item_id: int,
     qty: int,
+    no_pr: str,
     db: Session = Depends(get_db)
 ):
     if qty <= 0:
@@ -22,11 +23,18 @@ def stock_in(
             detail="Jumlah barang harus lebih dari 0"
         )
 
+    if not no_pr.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="No. PR wajib diisi"
+        )
+
     try:
         item = StockService.stock_in(
             db=db,
             item_id=item_id,
-            qty=qty
+            qty=qty,
+            no_pr=no_pr.strip()
         )
 
         return {
@@ -34,6 +42,7 @@ def stock_in(
             "item_id": item.id,
             "item_name": item.item_name,
             "qty": qty,
+            "no_pr": no_pr.strip(),
             "stock": item.stock
         }
 

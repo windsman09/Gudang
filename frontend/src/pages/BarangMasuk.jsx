@@ -14,6 +14,7 @@ export default function BarangMasuk() {
   const [form, setForm] = useState({
     item_id: "",
     jumlah: "",
+    no_pr: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -68,6 +69,11 @@ export default function BarangMasuk() {
       return;
     }
 
+    if (!form.no_pr.trim()) {
+      alert("Silakan masukkan Nomor PR.");
+      return;
+    }
+
     if (!form.jumlah || Number(form.jumlah) <= 0) {
       alert("Jumlah barang harus lebih dari 0.");
       return;
@@ -80,6 +86,7 @@ export default function BarangMasuk() {
         params: {
           item_id: Number(form.item_id),
           qty: Number(form.jumlah),
+          no_pr: form.no_pr.trim(),
         },
       });
 
@@ -89,6 +96,7 @@ export default function BarangMasuk() {
       setForm({
         item_id: "",
         jumlah: "",
+        no_pr: "",
       });
 
       // Refresh daftar barang agar stok terbaru tampil
@@ -140,7 +148,8 @@ export default function BarangMasuk() {
         <button
           type="button"
           onClick={fetchItems}
-          className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+          disabled={loadingItems}
+          className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
         >
           <RefreshCw size={16} />
           Refresh
@@ -167,10 +176,11 @@ export default function BarangMasuk() {
 
         <form onSubmit={handleSubmit}>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          {/* ================= INPUT ================= */}
+          <div className="grid gap-5 md:grid-cols-3">
 
             {/* Pilih Barang */}
-            <div className="md:col-span-1">
+            <div>
 
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 Barang
@@ -204,6 +214,26 @@ export default function BarangMasuk() {
             </div>
 
 
+            {/* No. PR */}
+            <div>
+
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Nomor PR
+              </label>
+
+              <input
+                type="text"
+                name="no_pr"
+                value={form.no_pr}
+                onChange={handleChange}
+                disabled={loading}
+                placeholder="Contoh: PR/2026/001"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+
+            </div>
+
+
             {/* Jumlah */}
             <div>
 
@@ -227,7 +257,7 @@ export default function BarangMasuk() {
           </div>
 
 
-          {/* Informasi barang */}
+          {/* ================= INFORMASI BARANG ================= */}
           {selectedItem && (
             <div className="mt-5 rounded-lg bg-slate-50 p-4">
 
@@ -269,7 +299,7 @@ export default function BarangMasuk() {
           )}
 
 
-          {/* Button */}
+          {/* ================= BUTTON ================= */}
           <div className="mt-6 flex justify-end">
 
             <button
@@ -293,7 +323,7 @@ export default function BarangMasuk() {
       </div>
 
 
-      {/* ================= INFORMASI ================= */}
+      {/* ================= INFORMASI STOK ================= */}
       <div className="rounded-xl bg-white p-6 shadow">
 
         <div className="mb-5">

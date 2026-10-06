@@ -11,7 +11,8 @@ class StockService:
     def stock_in(
         db: Session,
         item_id: int,
-        qty: int
+        qty: int,
+        no_pr:str
     ):
         item = (
             db.query(Item)
@@ -28,7 +29,8 @@ class StockService:
 
         trx = StockIn(
             item_id=item_id,
-            qty=qty
+            qty=qty,
+            no_pr=no_pr
         )
 
         db.add(trx)
@@ -41,7 +43,8 @@ class StockService:
     def stock_out(
         db: Session,
         item_id: int,
-        qty: int
+        qty: int,
+        no_pr:str,
     ):
         item = (
             db.query(Item)
@@ -63,7 +66,7 @@ class StockService:
 
         trx = StockOut(
             item_id=item_id,
-            qty=qty
+            qty=qty,
         )
 
         db.add(trx)
