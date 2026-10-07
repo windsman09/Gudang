@@ -213,7 +213,7 @@ export default function Dashboard({ onLogout }) {
                   .charAt(0)
                   .toUpperCase()
               ) : user?.username ? (
-              user.username.charAt(0).topUpperCase()
+              user.username.charAt(0). toUpperCase()
               ) : (
                 <User size={20} />
               )}
