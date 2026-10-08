@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 # Cache python
 __pychache___/
+=======
+# Cache Python
+__pycache__/
+>>>>>>> 8cb712bd1880db4b3aa0903e8c5e59f6692f6fa9
 *.pyc
 
 # Database lokal
@@ -11,5 +16,9 @@ __pychache___/
 venv/
 .venv/
 
+<<<<<<< HEAD
 # Node modules (jika ada fronend/Vue)
+=======
+# Node modules (jika ada frontend/Vue)
+>>>>>>> 8cb712bd1880db4b3aa0903e8c5e59f6692f6fa9
 node_modules/

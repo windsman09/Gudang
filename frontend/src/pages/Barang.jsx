@@ -7,13 +7,14 @@ import {
   Trash2,
   X,
   RefreshCw,
+  Pencil,
 } from "lucide-react";
 import api from "../api/api";
 
 export default function Barang() {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
-
+ 
   const [form, setForm] = useState({
     item_code: "",
     item_name: "",
@@ -25,6 +26,7 @@ export default function Barang() {
 
   const [loading, setLoading] = useState(false);
   const [loadingItems, setLoadingItems] = useState(true);
+  const [editingId,serEditingId] = useState(null);
 
   async function fetchItems() {
     try {
@@ -67,7 +69,27 @@ export default function Barang() {
       min_stock: "",
       location: "",
     });
+    setEditingId(null);
   }
+  
+  function handleEdit(item) {
+    setEditingId(item.id);
+
+    setForm({
+      item_code: item.item_code || "",
+      item_name: item.item_name || "",
+      category: item.category || "",
+      unit: item.unit || "",
+      min_stock: item.min_stock ?? "",
+      location: item.location || "",
+    });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -90,36 +112,48 @@ export default function Barang() {
     try {
       setLoading(true);
 
-      const data = {
-        item_code: form.item_code.trim(),
-        item_name: form.item_name.trim(),
-        category: form.category.trim(),
-        unit: form.unit.trim(),
-        min_stock: Number(form.min_stock || 0),
-        location: form.location.trim(),
-      };
+    const data = {
+      item_code: form.item_code.trim(),
+      item_name: form.item_name.trim(),
+      category: form.category.trim(),
+      unit: form.unit.trim(),
+      min_stock: Number(form.min_stock || 0),
+      location: form.location.trim(),
+    };
 
-      const response = await api.post("/items", data);
+    if (editingId) {
+      // EDIT
+      await api.put(`/items/${editingId}`, data);
 
-      alert(
-        response.data?.message ||
-          "Barang berhasil ditambahkan."
-      );
+      alert("Barang berhasil diperbarui.");
+    } else {
+      // TAMBAH
+      await api.post("/items", data);
 
-      resetForm();
-
-      await fetchItems();
-    } catch (error) {
-      console.error("Gagal menambahkan barang:", error);
-
-      alert(
-        error.response?.data?.detail ||
-          "Gagal menambahkan barang."
-      );
-    } finally {
-      setLoading(false);
+      alert("Barang berhasil ditambahkan.");
     }
+
+    resetForm();
+
+    await fetchItems();
+  } catch (error) {
+    console.error(
+      editingId
+        ? "Gagal memperbarui barang:"
+        : "Gagal menambahkan barang:",
+      error
+    );
+
+    alert(
+      error.response?.data?.detail ||
+        (editingId
+          ? "Gagal memperbarui barang."
+          : "Gagal menambahkan barang.")
+    );
+  } finally {
+    setLoading(false);
   }
+}
 
   async function handleDelete(item) {
     const yakin = window.confirm(
@@ -199,14 +233,17 @@ export default function Barang() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-slate-800">
-              Tambah Barang
+           <h2 className="text-xl font-bold text-slate-800">
+            {editingId ? "Edit Barang" : "Tambah Barang"}
             </h2>
 
             <p className="text-sm text-slate-500">
-              Tambahkan barang baru ke master gudang
-            </p>
+         {editingId
+          ? "Perbarui informasi barang"
+          : "Tambahkan barang baru ke master gudang"}
+        </p>
           </div>
+
         </div>
 
         <form onSubmit={handleSubmit}>

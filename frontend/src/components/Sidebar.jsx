@@ -4,9 +4,14 @@ import {
   PackagePlus,
   PackageMinus,
   Home,
+  Users,
 } from "lucide-react";
 
-export default function Sidebar({ activePage, setActivePage }) {
+export default function Sidebar({
+  activePage,
+  setActivePage,
+  user,
+}) {
   const menus = [
     {
       id: "dashboard",
@@ -33,6 +38,17 @@ export default function Sidebar({ activePage, setActivePage }) {
       label: "Home",
       icon: Home,
     },
+
+    // Hanya muncul untuk Super Admin
+    ...(user?.role === "superuser"
+      ? [
+          {
+            id: "users",
+            label: "User Management",
+            icon: Users,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -62,6 +78,21 @@ export default function Sidebar({ activePage, setActivePage }) {
           );
         })}
       </nav>
+
+      {/* Informasi user */}
+      <div className="mt-8 border-t border-slate-700 pt-4">
+        <p className="text-sm text-slate-400">
+          Login sebagai
+        </p>
+
+        <p className="font-semibold truncate">
+          {user?.username || "User"}
+        </p>
+
+        <p className="text-xs text-slate-400 mt-1">
+          {user?.role || "user"}
+        </p>
+      </div>
     </aside>
   );
 }

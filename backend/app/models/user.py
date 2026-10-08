@@ -6,7 +6,12 @@ from app.core.database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True,
+        autoincrement=True
+    )
 
     username = Column(
         String,
@@ -15,13 +20,18 @@ class User(Base):
         nullable=False
     )
 
-    hashed_password = Column(
+    full_name = Column(
         String,
-        nullable=False
+        nullable=True
     )
 
     role = Column(
         String,
         default="user",
+        nullable=False
+    )
+
+    hashed_password = Column(
+        String,
         nullable=False
     )
