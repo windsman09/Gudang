@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import {
   ArrowDownToLine,
+  Search,
   Save,
+  Loader2,
   Package,
   RefreshCw,
+  FileSpreadsheet,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -113,6 +116,32 @@ export default function BarangMasuk() {
       setLoading(false);
     }
   }
+  
+  //===============
+  //export ke excel
+  //===============
+  async function handleExportExcel() {
+    try {
+      const response = await api.get("/exports/stock-in", {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "riwayat_barang_masuk.xlsx";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export barang masuk gagal:", error);
+      alert("Gagal export Excel. Periksa koneksi dan login.");
+    }
+  }
 
   // =========================
   // Barang yang sedang dipilih
@@ -125,10 +154,8 @@ export default function BarangMasuk() {
     <div className="min-h-screen bg-slate-100 p-6">
 
       {/* ================= HEADER ================= */}
-      <div className="mb-6 flex items-center justify-between">
-
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-
           <div className="rounded-xl bg-blue-600 p-3 text-white shadow">
             <ArrowDownToLine size={24} />
           </div>
@@ -138,25 +165,38 @@ export default function BarangMasuk() {
               Barang Masuk
             </h1>
 
-            <p className="text-sm text-slate-500">
-              Kelola transaksi barang yang masuk ke gudang
+           <p className="text-sm text-slate-500">
+             Kelola transaksi barang yang masuk ke gudang
             </p>
           </div>
-
         </div>
 
-        <button
-          type="button"
-          onClick={fetchItems}
-          disabled={loadingItems}
-          className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
-        >
-          <RefreshCw size={16} />
-          Refresh
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Tombol Export Excel */}
+          <button
+            type="button"
+            onClick={handleExportExcel}
+            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-green-700"
+         >
+           <FileSpreadsheet size={18} />
+            Export Excel
+          </button>
 
+          {/* Tombol Refresh */}
+          <button
+           type="button"
+            onClick={fetchItems}
+            disabled={loadingItems}
+            className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+         >
+            <RefreshCw
+              size={16}
+              className={loadingItems ? "animate-spin" : ""}
+            />
+            Refresh
+          </button>
+        </div>
       </div>
-
 
       {/* ================= FORM ================= */}
       <div className="mb-6 rounded-xl bg-white p-6 shadow">

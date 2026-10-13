@@ -8,6 +8,7 @@ import {
   X,
   RefreshCw,
   Pencil,
+  FileSpreadsheet,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -202,6 +203,29 @@ export default function Barang() {
     });
   }, [items, search]);
 
+async function handleExportExcel() {
+  try {
+    const response = await api.get("/exports/items", {
+      responseType: "blob",
+    });
+
+    const url = window.URL.createObjectURL(response.data);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "laporan_stok_barang.xlsx";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Export stok barang gagal:", error);
+    alert("Gagal export Excel. Periksa koneksi dan login.");
+  }
+}
+
   return (
     <div className="min-h-screen bg-slate-100 p-6">
       {/* Header */}
@@ -391,7 +415,15 @@ export default function Barang() {
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              className="flex items-center gap-2 rounded-xl text-green-600 px-4 py-3 font-medium text-white transition hover:bg-green-700"
+              >
+              <FileSpreadsheet size={18} />
+              Export Excel
+            </button>
             {/* Search */}
             <div className="relative">
               <Search

@@ -4,6 +4,7 @@ import {
   Search,
   Package,
   Loader2,
+  FileSpreadsheet,
 } from "lucide-react";
 
 import api from "../services/api";
@@ -25,6 +26,7 @@ export default function BarangKeluar() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Mengambil daftar barang
   const fetchItems = async () => {
     try {
       const response = await api.get("/items");
@@ -35,6 +37,7 @@ export default function BarangKeluar() {
     }
   };
 
+  // Mengambil riwayat barang keluar
   const fetchHistory = async () => {
     try {
       const response = await api.get("/stock-out/");
@@ -49,6 +52,31 @@ export default function BarangKeluar() {
     fetchHistory();
   }, []);
 
+  // Export riwayat barang keluar ke Excel
+  const handleExportExcel = async () => {
+    try {
+      const response = await api.get("/exports/stock-out", {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = "riwayat_barang_keluar.xlsx";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export barang keluar gagal:", err);
+      alert("Gagal export Excel. Periksa koneksi, login, dan backend.");
+    }
+  };
+
+  // Mengubah nilai form
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -58,6 +86,7 @@ export default function BarangKeluar() {
     }));
   };
 
+  // Menyimpan transaksi barang keluar
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -100,11 +129,13 @@ export default function BarangKeluar() {
         note: form.note || null,
       });
 
-      setMessage(response.data.message);
+      setMessage(
+        response.data.message || "Barang keluar berhasil disimpan"
+      );
 
       setForm({
         item_id: "",
-        qty: "",
+        quantity: "",
         destination: "",
         note: "",
       });
@@ -123,6 +154,7 @@ export default function BarangKeluar() {
     }
   };
 
+  // Filter barang berdasarkan kata kunci
   const filteredItems = items.filter((item) => {
     const keyword = search.toLowerCase();
 
@@ -134,29 +166,39 @@ export default function BarangKeluar() {
     );
   });
 
+  // Barang yang sedang dipilih
   const selectedItem = items.find(
     (item) => item.id === Number(form.item_id)
   );
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">
-          Barang Keluar
-        </h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">
+            Barang Keluar
+          </h1>
 
-        <p className="text-sm text-slate-500 mt-1">
-          Catat barang yang keluar dari gudang
-        </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Catat barang yang keluar dari gudang
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleExportExcel}
+          className="flex items-center gap-2 rounded-xl bg-green-600 px-4 py-3 font-medium text-white transition hover:bg-green-700"
+        >
+          <FileSpreadsheet size={18} />
+          Export Excel
+        </button>
       </div>
 
-      {/* Form */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+      {/* Form Barang Keluar */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
             <ArrowUpFromLine size={22} />
           </div>
 
@@ -171,24 +213,24 @@ export default function BarangKeluar() {
           </div>
         </div>
 
-        {/* Message */}
+        {/* Pesan berhasil */}
         {message && (
-          <div className="mb-5 rounded-xl bg-green-50 border border-green-200 text-green-700 px-4 py-3 text-sm">
+          <div className="mb-5 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
             {message}
           </div>
         )}
 
+        {/* Pesan error */}
         {error && (
-          <div className="mb-5 rounded-xl bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* Search */}
+          {/* Pencarian barang */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               Cari Barang
             </label>
 
@@ -203,14 +245,14 @@ export default function BarangKeluar() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari kode atau nama barang..."
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
               />
             </div>
           </div>
 
-          {/* Item */}
+          {/* Pilih barang */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               Barang
             </label>
 
@@ -218,11 +260,10 @@ export default function BarangKeluar() {
               name="item_id"
               value={form.item_id}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white"
+              required
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             >
-              <option value="">
-                -- Pilih Barang --
-              </option>
+              <option value="">-- Pilih Barang --</option>
 
               {filteredItems.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -233,13 +274,10 @@ export default function BarangKeluar() {
             </select>
           </div>
 
-          {/* Stock information */}
+          {/* Informasi stok */}
           {selectedItem && (
-            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-4">
-              <Package
-                size={20}
-                className="text-blue-600"
-              />
+            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <Package size={20} className="text-blue-600" />
 
               <div>
                 <p className="text-sm text-slate-500">
@@ -253,9 +291,9 @@ export default function BarangKeluar() {
             </div>
           )}
 
-          {/* Quantity */}
+          {/* Jumlah keluar */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               Jumlah Keluar
             </label>
 
@@ -267,13 +305,14 @@ export default function BarangKeluar() {
               value={form.quantity}
               onChange={handleChange}
               placeholder="Masukkan jumlah"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              required
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
 
-          {/* Destination */}
+          {/* Tujuan */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               Tujuan
             </label>
 
@@ -283,13 +322,13 @@ export default function BarangKeluar() {
               value={form.destination}
               onChange={handleChange}
               placeholder="Contoh: Ruang H2"
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
 
-          {/* Note */}
+          {/* Keterangan */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               Keterangan
             </label>
 
@@ -297,24 +336,21 @@ export default function BarangKeluar() {
               name="note"
               value={form.note}
               onChange={handleChange}
-              rows="3"
+              rows={3}
               placeholder="Keterangan tambahan..."
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 resize-none"
+              className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
 
-          {/* Submit */}
+          {/* Tombol simpan */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-3 rounded-xl transition"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:bg-blue-300"
           >
             {loading ? (
               <>
-                <Loader2
-                  size={18}
-                  className="animate-spin"
-                />
+                <Loader2 size={18} className="animate-spin" />
                 Menyimpan...
               </>
             ) : (
@@ -327,57 +363,53 @@ export default function BarangKeluar() {
         </form>
       </div>
 
-      {/* History */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-
-        <div className="p-6 border-b border-slate-200">
+      {/* Riwayat Barang Keluar */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 p-6">
           <h2 className="font-semibold text-slate-800">
             Riwayat Barang Keluar
           </h2>
 
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="mt-1 text-sm text-slate-500">
             Daftar transaksi barang yang sudah keluar
           </p>
         </div>
 
         <div className="overflow-x-auto">
-
           <table className="w-full text-sm">
-
             <thead className="bg-slate-50">
               <tr>
-                <th className="text-left px-6 py-4 font-semibold text-slate-600">
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   No
                 </th>
 
-                <th className="text-left px-6 py-4 font-semibold text-slate-600">
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   Barang
                 </th>
 
-                <th className="text-left px-6 py-4 font-semibold text-slate-600">
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   Jumlah
                 </th>
 
-                <th className="text-left px-6 py-4 font-semibold text-slate-600">
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   Tujuan
                 </th>
 
-                <th className="text-left px-6 py-4 font-semibold text-slate-600">
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   Keterangan
                 </th>
 
-                <th className="text-left px-6 py-4 font-semibold text-slate-600">
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   Tanggal
                 </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-
               {history.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan={6}
                     className="px-6 py-10 text-center text-slate-400"
                   >
                     Belum ada transaksi barang keluar
@@ -385,10 +417,8 @@ export default function BarangKeluar() {
                 </tr>
               ) : (
                 history.map((transaction, index) => {
-
                   const item = items.find(
-                    (item) =>
-                      item.id === transaction.item_id
+                    (item) => item.id === transaction.item_id
                   );
 
                   return (
@@ -396,9 +426,7 @@ export default function BarangKeluar() {
                       key={transaction.id}
                       className="hover:bg-slate-50"
                     >
-                      <td className="px-6 py-4">
-                        {index + 1}
-                      </td>
+                      <td className="px-6 py-4">{index + 1}</td>
 
                       <td className="px-6 py-4">
                         <div className="font-medium text-slate-800">
@@ -414,7 +442,7 @@ export default function BarangKeluar() {
                       </td>
 
                       <td className="px-6 py-4 font-semibold text-red-600">
-                        -{transaction.quantity}
+                        -{transaction.qty}
                       </td>
 
                       <td className="px-6 py-4">
@@ -436,7 +464,6 @@ export default function BarangKeluar() {
                   );
                 })
               )}
-
             </tbody>
           </table>
         </div>
