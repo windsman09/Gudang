@@ -2,6 +2,9 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: `http://${window.location.hostname}:8000`,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 api.interceptors.request.use((config) => {
@@ -20,7 +23,11 @@ export const login = async (username, password) => {
   formData.append("username", username);
   formData.append("password", password);
 
-  const response = await api.post("/auth/token", formData);
+  const response = await api.post("/auth/token", formData, {
+    headers:{
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
 
   return response.data;
 };

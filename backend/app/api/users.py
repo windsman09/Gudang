@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -6,6 +6,7 @@ from app.core.security import hash_password
 from app.models.user import User
 from app.core.dependencies import get_current_user
 from app.core.permissions import require_superuser
+from pydantic import BaseModel
 
 
 router = APIRouter(
@@ -23,6 +24,10 @@ VALID_ROLES = [
     "user"
 ]
 
+class CreateUserRequest(BaseModel) :
+    username: str
+    password: str
+    full_name: str
 
 # =========================================================
 # Cek apakah user yang sedang login adalah Super User
@@ -44,28 +49,31 @@ def require_superuser(
 # =========================================================
 @router.post("/")
 def create_user(
-    username: str,
-    password: str,
-    full_name: str,
+    payload: CreateUserRequest,
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_superuser)
+    #username: str,
+    #password: str,
+    #full_name: str,
+    #db: Session = Depends(get_db),
+    #current_user: dict = Depends(require_superuser)
 ):
     existing_user = db.query(User).filter(
-        User.username == username
+        User.username == payload.username
     ).first()
 
     if existing_user:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username sudah digunakan"
         )
 
-    hashed_password = hash_password(password)
+    #hashed_password = hash_password(password)
 
     user = User(
-        username=username,
-        full_name=full_name,
-        hashed_password=hashed_password,
+        username=payload.username,
+        full_name=payload.full_name,
+        hashed_password=hash_password(payload.password),
         role="user"
     )
 

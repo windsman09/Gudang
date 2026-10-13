@@ -17,6 +17,7 @@ export default function UserManagement() {
   const [showForm, setShowForm] = useState(false);
 
   const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
 
   const [saving, setSaving] = useState(false);
@@ -66,11 +67,11 @@ export default function UserManagement() {
       setSaving(true);
       setError("");
 
-      await api.post("/users/", null, {
-        params: {
+      await api.post("/users/", {
+        
           username: username.trim(),
           password: password,
-        },
+          full_name: username.trim()
       });
 
       setUsername("");
@@ -268,6 +269,21 @@ export default function UserManagement() {
                 placeholder="Masukkan password"
                 className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
+            </div>
+            <div>
+              <label
+              htmlFor="full_name"
+              className="block text-sm font-medium mb-1"
+              > Full Name
+              </label>
+              <input
+              id="full_name"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName (e.target.value)}
+              placeholder="Masukkan nama lengkap"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2"
+              required/>
             </div>
 
             <div className="md:col-span-2 flex justify-end gap-3">
