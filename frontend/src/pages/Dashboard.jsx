@@ -36,31 +36,59 @@ export default function Dashboard({ onLogout }) {
    * Ambil daftar barang
    * =========================
    */
+
+
   async function fetchItems() {
     try {
       setLoading(true);
       setError("");
 
       const response = await api.get("/items");
+      const data = response.data;
+      console.log("Status:", response.status);
+      console.log("URL:", response.config.url);
+      console.log("Data:", response.data);
+      console.log("Array:", Array.isArray(response.data));
 
-      setItems(response.data);
+
+    // Terima array langsung atau array di dalam objek respons.
+      let itemList;
+
+      if (Array.isArray(data)) {
+        itemList = data;
+      } else if (Array.isArray(data?.items)) {
+        itemList = data.items;
+      } else if (Array.isArray(data?.data)) {
+        itemList = data.data;
+      } else {
+        console.error("Format respons /items tidak sesuai:", data);
+        throw new Error("Format data barang dari API tidak valid.");
+      }
+
+      setItems(itemList);
     } catch (error) {
-      console.error(
-        "Gagal mengambil data barang:",
-        error
-      );
+      console.error("Gagal mengambil data barang:", error);
+
+      setItems([]);
 
       if (error.response?.status === 401) {
         setError("Sesi login sudah tidak valid.");
-
         onLogout();
+      } else if (error.response?.status === 403) {
+        setError("Kamu tidak memiliki izin untuk melihat data barang.");
       } else {
-        setError("Gagal mengambil data barang.");
+        setError(
+          error.message === "Format data barang dari API tidak valid."
+            ? error.message
+            : "Gagal mengambil data barang. Periksa koneksi API."
+        );
       }
     } finally {
       setLoading(false);
     }
   }
+
+
 
   /*
    * =========================

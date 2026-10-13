@@ -20,16 +20,18 @@ app = FastAPI(title="Warehouse Management", lifespan=lifespan)
 # Setup CORS untuk React (Vite)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
+    #allow_origin_regex=r"https?://.*",
+       allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://10.21.6.147:5173",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Registrasi Router
+# Registrasi Route
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(items.router)
