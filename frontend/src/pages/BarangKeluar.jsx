@@ -328,7 +328,21 @@ export default function BarangKeluar() {
               className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
+          {/*Nama user*/}
 
+          <div>
+            <label className="bm-2 block text-sm font-medium text-slate-700">
+              Nama user
+            </label>
+            <input
+            type="text"
+              name="user"
+              valu={form.user}
+              onChaenge={handleChange}
+              placeholder="Nama Pengguna"
+              className="w-full rounded-xl border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-5000/10"
+            />
+          </div>
           {/* Keterangan */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
