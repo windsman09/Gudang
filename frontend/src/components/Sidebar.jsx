@@ -3,8 +3,12 @@ import {
   Package,
   PackagePlus,
   PackageMinus,
+  PackageOpen,
   Home,
+  Warehouse,
+  Forklift,
   Users,
+  Monitor,
   X,
 } from "lucide-react";
 
@@ -24,22 +28,22 @@ export default function Sidebar({
     {
       id: "barang",
       label: "Master Barang",
-      icon: Package,
+      icon: Warehouse,
     },
     {
       id: "barang-masuk",
       label: "Barang Masuk",
-      icon: PackagePlus,
+      icon: Forklift,
     },
     {
       id: "barang-keluar",
       label: "Barang Keluar",
-      icon: PackageMinus,
+      icon: PackageOpen,
     },
     {
       id: "monitoring",
-      label: "Monitoring IoT",
-      icon: Home,
+      label: "Monitoring Kelas",
+      icon: Monitor,
     },
 
     // Hanya muncul untuk Super Admin
@@ -73,7 +77,7 @@ export default function Sidebar({
         <div>
           {/* Header Sidebar & Tombol Close (Mobile) */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-xl font-bold">Gudang</h1>
+            <h1 className="text-xl font-bold">ME Syahdan</h1>
             <button
               type="button"
               onClick={() => setIsOpen(false)}

@@ -45,7 +45,7 @@ export default function Kontrol() {
         },
         {
           id: 2,
-          name: "Exhaust Fan / Kipas Ventilasi",
+          name: "Kualitas Udara",
           register: "0x0002",
           status: "OFF",
           sensor_value: "65 %",
@@ -110,7 +110,7 @@ export default function Kontrol() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
-            Kontrol & Monitoring IoT
+            Kontrol & Monitoring Kelistrikan Syahdan
           </h1>
           <p className="mt-1 text-sm text-slate-500">
             Monitoring dan Kontrol Kelistrikan Kelas Binus Syahdan
