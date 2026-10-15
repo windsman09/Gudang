@@ -47,6 +47,7 @@ def create_stock_out(
     stock_out = StockOut(
         item_id=item.id,
         qty=payload.qty,
+        user=payload.user,
         destination=payload.destination,
         note=payload.note
     )
