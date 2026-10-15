@@ -5,12 +5,15 @@ import {
   PackageMinus,
   Home,
   Users,
+  X,
 } from "lucide-react";
 
 export default function Sidebar({
   activePage,
   setActivePage,
   user,
+  isOpen,
+  setIsOpen,
 }) {
   const menus = [
     {
@@ -34,8 +37,8 @@ export default function Sidebar({
       icon: PackageMinus,
     },
     {
-      id: "home",
-      label: "Home",
+      id: "monitoring",
+      label: "Monitoring IoT",
       icon: Home,
     },
 
@@ -52,47 +55,73 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className="w-64 min-h-screen bg-slate-900 text-white p-4">
-      <h1 className="text-xl font-bold mb-6">
-        Gudang
-      </h1>
+    <>
+      {/* Overlay latar belakang gelap saat sidebar terbuka di layar */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-20 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+        />
+      )}
 
-      <nav className="space-y-2">
-        {menus.map((menu) => {
-          const Icon = menu.icon;
-
-          return (
+      {/* Konten Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 flex w-64 flex-col justify-between bg-slate-900 p-4 text-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div>
+          {/* Header Sidebar & Tombol Close (Mobile) */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-xl font-bold">Gudang</h1>
             <button
-              key={menu.id}
               type="button"
-              onClick={() => setActivePage(menu.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition ${
-                activePage === menu.id
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-300 hover:bg-slate-800"
-              }`}
+              onClick={() => setIsOpen(false)}
+              className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden"
             >
-              <Icon size={20} />
-              <span>{menu.label}</span>
+              <X size={20} />
             </button>
-          );
-        })}
-      </nav>
+          </div>
 
-      {/* Informasi user */}
-      <div className="mt-8 border-t border-slate-700 pt-4">
-        <p className="text-sm text-slate-400">
-          Login sebagai
-        </p>
+          {/* Menu Navigasi */}
+          <nav className="space-y-2">
+            {menus.map((menu) => {
+              const Icon = menu.icon;
 
-        <p className="font-semibold truncate">
-          {user?.username || "User"}
-        </p>
+              return (
+                <button
+                  key={menu.id}
+                  type="button"
+                  onClick={() => {
+                    setActivePage(menu.id);
+                    // Otomatis menutup sidebar di layar kecil setelah menu diklik
+                    if (window.innerWidth < 1024) {
+                      setIsOpen(false);
+                    }
+                  }}
+                  className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition ${
+                    activePage === menu.id
+                      ? "bg-blue-600 text-white"
+                      : "text-slate-300 hover:bg-slate-800"
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{menu.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
-        <p className="text-xs text-slate-400 mt-1">
-          {user?.role || "user"}
-        </p>
-      </div>
-    </aside>
+        {/* Informasi user di bagian bawah */}
+        <div className="border-t border-slate-700 pt-4">
+          <p className="text-sm text-slate-400">Login sebagai</p>
+          <p className="font-semibold truncate">{user?.username || "User"}</p>
+          <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
+            {user?.role || "user"}
+          </p>
+        </div>
+      </aside>
+    </>
   );
 }

@@ -1,26 +1,28 @@
 import { useEffect, useState } from "react";
 
+import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import api from "./api/api";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Barang from "./pages/Barang";
-import Home from "./pages/Home";
+import Monitoring from "./pages/Monitoring";
 import BarangMasuk from "./pages/BarangMasuk";
 import BarangKeluar from "./pages/BarangKeluar";
 import UserManagement from "./pages/UserManagement";
 
-function App() {
+export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     !!localStorage.getItem("access_token")
   );
 
   const [activePage, setActivePage] = useState("dashboard");
-
   const [user, setUser] = useState(null);
-
   const [loadingUser, setLoadingUser] = useState(true);
+
+  // State untuk mengontrol buka/tutup sidebar (otomatis sembunyi / toggle)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // =====================================================
   // Ambil profil user yang sedang login
@@ -37,15 +39,10 @@ function App() {
 
       try {
         const response = await api.get("/users/me");
-
         console.log("USER LOGIN:", response.data);
-
         setUser(response.data);
       } catch (error) {
-        console.error(
-          "Gagal mengambil profil user:",
-          error
-        );
+        console.error("Gagal mengambil profil user:", error);
 
         if (error.response?.status === 401) {
           localStorage.removeItem("access_token");
@@ -72,7 +69,6 @@ function App() {
   // =====================================================
   const handleLogout = () => {
     localStorage.removeItem("access_token");
-
     setUser(null);
     setIsLoggedIn(false);
     setActivePage("dashboard");
@@ -111,12 +107,7 @@ function App() {
   const renderPage = () => {
     switch (activePage) {
       case "dashboard":
-        return (
-          <Dashboard
-            onLogout={handleLogout}
-            user={user}
-          />
-        );
+        return <Dashboard onLogout={handleLogout} user={user} />;
 
       case "barang":
         return <Barang />;
@@ -127,45 +118,45 @@ function App() {
       case "barang-keluar":
         return <BarangKeluar />;
 
-      case "home":
-        return <Home />;
+      case "monitoring":
+        return <Monitoring />;
 
       case "users":
-        // Hanya Super Admin yang boleh membuka halaman ini
         if (user?.role !== "superuser") {
-          return (
-            <Dashboard
-              onLogout={handleLogout}
-              user={user}
-            />
-          );
+          return <Dashboard onLogout={handleLogout} user={user} />;
         }
-
         return <UserManagement />;
 
       default:
-        return (
-          <Dashboard
-            onLogout={handleLogout}
-            user={user}
-          />
-        );
+        return <Dashboard onLogout={handleLogout} user={user} />;
     }
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
+      {/* Sidebar dengan pengatur state buka/tutup */}
       <Sidebar
         activePage={activePage}
         setActivePage={setActivePage}
         user={user}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
       />
 
-      <main className="flex-1">
-        {renderPage()}
-      </main>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header dengan tombol hamburger di pojok atas */}
+        <Header
+          activePage={activePage}
+          user={user}
+          onLogout={handleLogout}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+
+        <main className="p-6 overflow-y-auto">
+          {renderPage()}
+        </main>
+      </div>
     </div>
   );
 }
-
-export default App;
