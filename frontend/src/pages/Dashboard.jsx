@@ -208,9 +208,9 @@ export default function Dashboard({ onLogout }) {
       {/* =========================
           Header
           ========================= */}
-      <header className="flex items-center justify-between border-b bg-white px-6 py-4 shadow-sm">
+      {/*<header className="flex items-center justify-between border-b bg-white px-6 py-4 shadow-sm">
 
-        {/* Judul */}
+        {/* Judul 
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
             Dashboard Gudang
@@ -223,7 +223,7 @@ export default function Dashboard({ onLogout }) {
 
         {/* =========================
             User Profile
-            ========================= */}
+            ========================= 
         <div className="relative">
 
           <button
@@ -234,7 +234,7 @@ export default function Dashboard({ onLogout }) {
             className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-slate-100"
           >
 
-            {/* Avatar */}
+            {/* Avatar 
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white">
               {user?.full_name ? (
                 user.full_name
@@ -247,7 +247,7 @@ export default function Dashboard({ onLogout }) {
               )}
             </div>
 
-            {/* Username */}
+            {/* Username 
             <div className="hidden text-left sm:block">
               <p className="text-sm font-semibold text-slate-800">
                 {user?.username || "User"}
@@ -267,11 +267,11 @@ export default function Dashboard({ onLogout }) {
 
           {/* =========================
               Dropdown Profile
-              ========================= */}
+              ========================= 
           {showProfile && (
             <div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
 
-              {/* Informasi User */}
+              {/* Informasi User 
               <div className="mb-4 flex items-center gap-3">
 
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-semibold text-white">
@@ -294,7 +294,7 @@ export default function Dashboard({ onLogout }) {
 
               </div>
 
-              {/* Logout */}
+              {/* Logout 
               <div className="border-t pt-3">
 
                 <button
@@ -316,7 +316,7 @@ export default function Dashboard({ onLogout }) {
 
         </div>
 
-      </header>
+      </header>*/}
 
       {/* =========================
           Content
