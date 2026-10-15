@@ -328,21 +328,22 @@ export default function BarangKeluar() {
               className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
-          {/*Nama user*/}
 
+          {/* Nama user */}
           <div>
-            <label className="bm-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               Nama user
             </label>
             <input
-            type="text"
+              type="text"
               name="user"
-              valu={form.user}
-              onChaenge={handleChange}
+              value={form.user}
+              onChange={handleChange}
               placeholder="Nama Pengguna"
-              className="w-full rounded-xl border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-5000/10"
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
+
           {/* Keterangan */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -407,9 +408,9 @@ export default function BarangKeluar() {
                 <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   Jumlah
                 </th>
-                
+
                 <th className="px-6 py-4 text-left font-semibold text-slate-600">
-                Nama pengguna
+                  Nama pengguna
                 </th>
 
                 <th className="px-6 py-4 text-left font-semibold text-slate-600">
@@ -430,7 +431,7 @@ export default function BarangKeluar() {
               {history.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-6 py-10 text-center text-slate-400"
                   >
                     Belum ada transaksi barang keluar
@@ -466,9 +467,9 @@ export default function BarangKeluar() {
                         -{transaction.qty}
                       </td>
 
-                      <td className="px-6 py-4 font-semibold text-red-600">
-                        {transaction.user|| "-"}
-                        </td>
+                      <td className="px-6 py-4">
+                        {transaction.user || "-"}
+                      </td>
 
                       <td className="px-6 py-4">
                         {transaction.destination || "-"}

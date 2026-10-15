@@ -12,6 +12,7 @@ class StockOut(Base):
     id = Column(Integer, primary_key=True, index=True)
     item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
     qty = Column(Integer, nullable=False)
+    user= Column(String, nullable=True)
     destination = Column(String, nullable=True)
     note = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
