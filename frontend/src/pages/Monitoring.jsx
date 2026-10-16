@@ -8,7 +8,6 @@ import {
   WifiOff,
   AlertCircle,
   CheckCircle2,
-  Sliders,
 } from "lucide-react";
 
 import api from "../services/api";
@@ -20,48 +19,33 @@ export default function Kontrol() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  // Mengambil status perangkat IoT dari backend FastAPI
+  // Mengambil status perangkat dari backend FastAPI (Modbus)
   const fetchDevices = async () => {
     try {
       setLoading(true);
-      // Sesuaikan endpoint backend Anda nantinya (contoh: /iot/devices)
-      const response = await api.get("/iot/devices");
-      setDevices(response.data);
+      // Memanggil endpoint GET /device/channels
+      const response = await api.get("/device/channels");
+      
+      // Backend mengembalikan: { "channels": [ { channel_id: 0, status: true }, ... ] }
+      // Kita mapping data dari backend agar sesuai dengan format UI Anda
+      const mappedDevices = response.data.channels.map((ch) => ({
+        id: ch.channel_id,
+        // Anda bisa mengkustomisasi nama berdasarkan ID channel
+        name: ch.channel_id === 0 ? "AC J1A" : 
+              ch.channel_id === 1 ? "Lampu Utama" : 
+              `Relay Channel ${ch.channel_id + 1}`,
+        register: `CH-${ch.channel_id}`,
+        status: ch.status ? "ON" : "OFF", // Konversi boolean ke string
+        sensor_value: ch.status ? "Aktif" : "Mati", // Sementara pakai status, karena Modbus ETD8A12 baru baca relay
+        sensor_label: "Status Output",
+        is_online: true, 
+      }));
+
+      setDevices(mappedDevices);
       setError("");
     } catch (err) {
       console.error("Gagal mengambil data IoT:", err);
-      setError("Gagal terhubung ke server IoT / Backend.");
-      
-      // Data dummy untuk pratinjau jika backend belum siap
-      setDevices([
-        {
-          id: 1,
-          name: "AC J1A",
-          register: "0x0001",
-          status: "ON",
-          sensor_value: "28.5 °C",
-          sensor_label: "Suhu Ruangan",
-          is_online: true,
-        },
-        {
-          id: 2,
-          name: "Kualitas Udara",
-          register: "0x0002",
-          status: "OFF",
-          sensor_value: "65 %",
-          sensor_label: "Kelembapan (RH)",
-          is_online: true,
-        },
-        {
-          id: 3,
-          name: "Lampu J1A",
-          register: "0x0003",
-          status: "Menyala",
-          sensor_value: "250 lumen",
-          sensor_label: "Tegangan Listrik",
-          is_online: false,
-        },
-      ]);
+      setError("Gagal terhubung ke server FastAPI / Modbus.");
     } finally {
       setLoading(false);
     }
@@ -69,31 +53,34 @@ export default function Kontrol() {
 
   useEffect(() => {
     fetchDevices();
-    // Auto refresh setiap 5 detik untuk pemantauan real-time
     const interval = setInterval(fetchDevices, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Fungsi untuk mengirim perintah kontrol (ON/OFF) ke perangkat via ESP32/Modbus
+  // Mengirim perintah kontrol ke FastAPI
   const handleToggleControl = async (deviceId, currentStatus) => {
-    const newStatus = currentStatus === "ON" ? "OFF" : "ON";
+    // Tentukan boolean status yang baru (Jika saat ini ON, maka kirim false)
+    const isCurrentlyOn = currentStatus === "ON";
+    const payloadStatus = !isCurrentlyOn; 
+    const newStatusText = payloadStatus ? "ON" : "OFF";
+
     setActionLoading(deviceId);
     setMessage("");
     setError("");
 
     try {
-      // Sesuaikan endpoint backend Anda (contoh: /iot/control)
-      await api.post("/iot/control", {
-        device_id: deviceId,
-        command: newStatus,
+      // Memanggil endpoint POST /device/channels/{channel_id}
+      // Payload sesuai Pydantic FastAPI: { "status": true/false }
+      await api.post(`/device/channels/${deviceId}`, {
+        status: payloadStatus,
       });
 
-      setMessage(`Berhasil mengubah status perangkat ke ${newStatus}`);
+      setMessage(`Berhasil mengubah status perangkat ke ${newStatusText}`);
       
       // Update state lokal secara instan
       setDevices((prev) =>
         prev.map((dev) =>
-          dev.id === deviceId ? { ...dev, status: newStatus } : dev
+          dev.id === deviceId ? { ...dev, status: newStatusText, sensor_value: payloadStatus ? "Aktif" : "Mati" } : dev
         )
       );
     } catch (err) {
@@ -113,7 +100,7 @@ export default function Kontrol() {
             Kontrol & Monitoring Kelistrikan Syahdan
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Monitoring dan Kontrol Kelistrikan Kelas Binus Syahdan
+            Monitoring dan Kontrol Kelistrikan Kelas Binus Syahdan (Modbus ETD8A12)
           </p>
         </div>
 
@@ -139,7 +126,7 @@ export default function Kontrol() {
       {error && (
         <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <AlertCircle size={18} />
-          <span>{error} (Menampilkan mode simulasi data lokal)</span>
+          <span>{error}</span>
         </div>
       )}
 
