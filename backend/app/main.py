@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import Base, engine
-from app.api import auth, users, items, stock_in, stock_out, export
+from app.api import auth, users, items, stock_in, stock_out, export, modbus
 # Import model jika diperlukan registrasi eksplisit ke SQLAlchemy metadata
 from app.models.stock_out import StockOut
 
@@ -38,3 +38,4 @@ app.include_router(items.router)
 app.include_router(stock_in.router)
 app.include_router(stock_out.router)
 app.include_router(export.router)
+app.include_router(modbus.router)
