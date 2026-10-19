@@ -13,13 +13,15 @@ export default function Monitoring() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Ambil URL dari file .env
+  const API_URL = import.meta.env.VITE_API_URL;
+
   // Fungsi untuk mengambil semua data (Sensor + Relay) sekaligus
   const fetchDeviceStatus = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Sesuaikan URL dengan alamat backend FastAPI Anda
-      const response = await fetch(`http://localhost:8000/api/modbus/${selectedClass}/status`);
+      const response = await fetch(`${API_URL}/api/modbus/${selectedClass}/status`);
       if (!response.ok) throw new Error("Gagal mengambil data dari server");
       
       const result = await response.json();
@@ -40,8 +42,7 @@ export default function Monitoring() {
       newRelays[index].is_on = !currentState;
       setRelays(newRelays);
 
-      // Kirim perintah ke backend
-      const response = await fetch(`http://localhost:8000/api/modbus/${selectedClass}/relay/${index}`, {
+      const response = await fetch(`${API_URL}/api/modbus/${selectedClass}/relay/${index}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ state: !currentState }),
@@ -60,11 +61,21 @@ export default function Monitoring() {
   // Otomatis ambil data setiap kali dropdown kelas diubah
   useEffect(() => {
     fetchDeviceStatus();
-    
-    // (Opsional) Auto-refresh setiap 5 detik
-    // const interval = setInterval(fetchDeviceStatus, 5000);
-    // return () => clearInterval(interval);
   }, [selectedClass]);
+
+  // === FUNGSI getDeviceName DITAMBAHKAN DI SINI ===
+  const getDeviceName = (classId, index, defaultChannel) => {
+    const deviceNames = {
+      "kelas-1": ["Lampu J1A", "J1A AC no.1", "J1A AC no.2", "J1A AC no.3", "J2A Lampu", "J2A AC no.1", "J2A AC no.2", "J2A AC no.3","Lampu J3A", "J3A AC no.1", "J3A AC no.2", "J3A AC no.3"],
+      "kelas-2": ["AC K1B", "Lampu K1B", "Belum", "Belum", "Belum", "Cadangan"],
+      "kelas-3": ["Lampu J1B", "J1B AC no.1", "J1B AC no.2", "J1B AC no.3", "Lampu J2B", "J2B AC no.1", "J2B AC no.2", "J2B AC no.3", "Lampu J3B", "J3B AC no.1", "J3B AC no.2", "J3B AC no.3"],
+      "kelas-4": ["Lampu K2A", "K2A AC no.1", "K2A AC no.2", "K2A AC no .3", "Lampu K2B", "K2B AC no.1", "K2B AC no.2","Hall Kecil no.1","Hall Kecil no.2", "AHU H2 1","AHU H2 2"],
+      "kelas-5": ["Lampu K2C", "K2C AC no.1","K2C AC no.2","Lampu K2D","K2D AC no.1", "K2D AC no.2","AHU LSC","AHU Rektorat","Spare"]
+    };
+
+    return deviceNames[classId]?.[index] || `Channel ${defaultChannel}`;
+  };
+  // ================================================
 
   return (
     <div className="p-6">
@@ -81,9 +92,10 @@ export default function Monitoring() {
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium focus:border-blue-500 focus:outline-none"
           >
             <option value="kelas-1"> Kelas J (A)</option>
-            <option value="kelas-2">Kelas J (B)</option>
-            <option value="kelas-3">Kelas 3</option>
-            <option value="kelas-4">Kelas 4</option>
+            <option value="kelas-2">Kelas K1</option>
+            <option value="kelas-3">Kelas J (B)</option>
+            <option value="kelas-4">Kelas K2 & Hall</option>
+            <option value="kelas-5"> Kelas K2 & AHU</option>
           </select>
           
           <button
@@ -133,7 +145,7 @@ export default function Monitoring() {
           </div>
         </div>
       </div>
-
+          
       {/* --- BAGIAN KONTROL RELAY --- */}
       <h2 className="mb-4 text-lg font-semibold text-slate-700">Kontrol Perangkat</h2>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -155,7 +167,11 @@ export default function Monitoring() {
               <Power size={24} />
             </div>
             <div className="text-center">
-              <p className="font-semibold text-slate-700">Channel {relay.channel}</p>
+              {/* NAMA CHANNEL SUDAH DICUSTOM DI SINI */}
+              <p className="font-semibold text-slate-700 text-sm">
+                 {getDeviceName(selectedClass, index, relay.channel)}
+              </p>
+              
               <p className={`text-xs ${relay.is_on ? "text-green-600 font-bold" : "text-slate-400"}`}>
                 {relay.is_on ? "MENYALA" : "MATI"}
               </p>
