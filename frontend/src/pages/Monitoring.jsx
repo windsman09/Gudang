@@ -1,14 +1,4 @@
 import { useEffect, useState } from "react";
-import {
-  Cpu,
-  Power,
-  RefreshCw,
-  Activity,
-  Wifi,
-  WifiOff,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
 import { Thermometer, Sun, Power, RefreshCw, AlertCircle } from "lucide-react";
 
 export default function Monitoring() {
