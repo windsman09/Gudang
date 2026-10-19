@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import {
   Cpu,
@@ -10,10 +9,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
-=======
-import { useState, useEffect } from "react";
 import { Thermometer, Sun, Power, RefreshCw, AlertCircle } from "lucide-react";
->>>>>>> 1efd356bd262d0fd2da41665cbe1dd21fd67be13
 
 export default function Monitoring() {
   // State untuk memilih kelas mana yang sedang dilihat
@@ -30,35 +26,6 @@ export default function Monitoring() {
   // Ambil URL dari file .env
   const API_URL = import.meta.env.VITE_API_URL;
 
-<<<<<<< HEAD
-  // Mengambil status perangkat dari backend FastAPI (Modbus)
-  const fetchDevices = async () => {
-    try {
-      setLoading(true);
-      // Memanggil endpoint GET /device/channels
-      const response = await api.get("/device/channels");
-      
-      // Backend mengembalikan: { "channels": [ { channel_id: 0, status: true }, ... ] }
-      // Kita mapping data dari backend agar sesuai dengan format UI Anda
-      const mappedDevices = response.data.channels.map((ch) => ({
-        id: ch.channel_id,
-        // Anda bisa mengkustomisasi nama berdasarkan ID channel
-        name: ch.channel_id === 0 ? "AC J1A" : 
-              ch.channel_id === 1 ? "Lampu Utama" : 
-              `Relay Channel ${ch.channel_id + 1}`,
-        register: `CH-${ch.channel_id}`,
-        status: ch.status ? "ON" : "OFF", // Konversi boolean ke string
-        sensor_value: ch.status ? "Aktif" : "Mati", // Sementara pakai status, karena Modbus ETD8A12 baru baca relay
-        sensor_label: "Status Output",
-        is_online: true, 
-      }));
-
-      setDevices(mappedDevices);
-      setError("");
-    } catch (err) {
-      console.error("Gagal mengambil data IoT:", err);
-      setError("Gagal terhubung ke server FastAPI / Modbus.");
-=======
   // Fungsi untuk mengambil semua data (Sensor + Relay) sekaligus
   const fetchDeviceStatus = async () => {
     setIsLoading(true);
@@ -72,46 +39,11 @@ export default function Monitoring() {
       setRelays(result.data.relays);
     } catch (err) {
       setError(err.message);
->>>>>>> 1efd356bd262d0fd2da41665cbe1dd21fd67be13
     } finally {
       setIsLoading(false);
     }
   };
 
-<<<<<<< HEAD
-  useEffect(() => {
-    fetchDevices();
-    const interval = setInterval(fetchDevices, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Mengirim perintah kontrol ke FastAPI
-  const handleToggleControl = async (deviceId, currentStatus) => {
-    // Tentukan boolean status yang baru (Jika saat ini ON, maka kirim false)
-    const isCurrentlyOn = currentStatus === "ON";
-    const payloadStatus = !isCurrentlyOn; 
-    const newStatusText = payloadStatus ? "ON" : "OFF";
-
-    setActionLoading(deviceId);
-    setMessage("");
-    setError("");
-
-    try {
-      // Memanggil endpoint POST /device/channels/{channel_id}
-      // Payload sesuai Pydantic FastAPI: { "status": true/false }
-      await api.post(`/device/channels/${deviceId}`, {
-        status: payloadStatus,
-      });
-
-      setMessage(`Berhasil mengubah status perangkat ke ${newStatusText}`);
-      
-      // Update state lokal secara instan
-      setDevices((prev) =>
-        prev.map((dev) =>
-          dev.id === deviceId ? { ...dev, status: newStatusText, sensor_value: payloadStatus ? "Aktif" : "Mati" } : dev
-        )
-      );
-=======
   // Fungsi untuk menyalakan/mematikan alat
   const toggleRelay = async (index, currentState) => {
     try {
@@ -129,7 +61,6 @@ export default function Monitoring() {
       if (!response.ok) {
         throw new Error("Gagal mengubah status relay");
       }
->>>>>>> 1efd356bd262d0fd2da41665cbe1dd21fd67be13
     } catch (err) {
       alert(err.message);
       // Rollback jika gagal
@@ -160,17 +91,8 @@ export default function Monitoring() {
     <div className="p-6">
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-<<<<<<< HEAD
-          <h1 className="text-2xl font-bold text-slate-800">
-            Kontrol & Monitoring Kelistrikan Syahdan
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Monitoring dan Kontrol Kelistrikan Kelas Binus Syahdan (Modbus ETD8A12)
-          </p>
-=======
           <h1 className="text-2xl font-bold text-slate-800">Monitoring Kelas</h1>
           <p className="text-slate-500">Pantau suhu, cahaya, dan kontrol perangkat ruangan</p>
->>>>>>> 1efd356bd262d0fd2da41665cbe1dd21fd67be13
         </div>
 
         <div className="flex items-center gap-3">
@@ -198,15 +120,9 @@ export default function Monitoring() {
       </div>
 
       {error && (
-<<<<<<< HEAD
-        <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          <AlertCircle size={18} />
-          <span>{error}</span>
-=======
         <div className="mb-6 flex items-center gap-2 rounded-lg bg-red-50 p-4 text-red-600">
           <AlertCircle size={20} />
           <p>{error}</p>
->>>>>>> 1efd356bd262d0fd2da41665cbe1dd21fd67be13
         </div>
       )}
 
