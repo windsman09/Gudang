@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.core.permissions import require_superuser
 
 from app.core.database import get_db
 from app.services.stock_service import StockService
@@ -15,7 +16,8 @@ def stock_in(
     item_id: int,
     qty: int,
     no_pr: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_superuser)
 ):
     if qty <= 0:
         raise HTTPException(
