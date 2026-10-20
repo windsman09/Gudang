@@ -21,6 +21,7 @@ router = APIRouter(
 VALID_ROLES = [
     "superuser",
     "admin",
+    "operator"
     "user"
 ]
 
