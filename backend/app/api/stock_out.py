@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.core.permissions import require_admin
 
 from app.core.database import get_db
 from app.models.item import Item
@@ -16,7 +17,8 @@ router = APIRouter(
 @router.post("/")
 def create_stock_out(
     payload: StockOutCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_admin)
 ):
     item = db.query(Item).filter(
         Item.id == payload.item_id
@@ -47,6 +49,7 @@ def create_stock_out(
     stock_out = StockOut(
         item_id=item.id,
         qty=payload.qty,
+        user=payload.user,
         destination=payload.destination,
         note=payload.note
     )

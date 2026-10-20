@@ -18,8 +18,9 @@ export default function BarangKeluar() {
 
   const [form, setForm] = useState({
     item_id: "",
-    quantity: "",
+    qty: "",
     destination: "",
+    user: "",
     note: "",
   });
 
@@ -98,7 +99,7 @@ export default function BarangKeluar() {
       return;
     }
 
-    if (!form.quantity || Number(form.quantity) <= 0) {
+    if (!form.qty || Number(form.qty) <= 0) {
       setError("Jumlah barang harus lebih dari 0");
       return;
     }
@@ -112,7 +113,7 @@ export default function BarangKeluar() {
       return;
     }
 
-    if (Number(form.quantity) > selectedItem.stock) {
+    if (Number(form.qty) > selectedItem.stock) {
       setError(
         `Stok tidak cukup. Stok tersedia: ${selectedItem.stock}`
       );
@@ -124,7 +125,8 @@ export default function BarangKeluar() {
 
       const response = await api.post("/stock-out/", {
         item_id: Number(form.item_id),
-        qty: Number(form.quantity),
+        qty: Number(form.qty),
+        user: form.user,
         destination: form.destination || null,
         note: form.note || null,
       });
@@ -135,7 +137,8 @@ export default function BarangKeluar() {
 
       setForm({
         item_id: "",
-        quantity: "",
+        qty: "",
+        user: "",
         destination: "",
         note: "",
       });
@@ -299,10 +302,10 @@ export default function BarangKeluar() {
 
             <input
               type="number"
-              name="quantity"
+              name="qty"
               min="1"
               max={selectedItem?.stock || undefined}
-              value={form.quantity}
+              value={form.qty}
               onChange={handleChange}
               placeholder="Masukkan jumlah"
               required
@@ -325,21 +328,22 @@ export default function BarangKeluar() {
               className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
-          {/*Nama user*/}
 
+          {/* Nama user */}
           <div>
-            <label className="bm-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
               Nama user
             </label>
             <input
-            type="text"
+              type="text"
               name="user"
-              valu={form.user}
-              onChaenge={handleChange}
+              value={form.user}
+              onChange={handleChange}
               placeholder="Nama Pengguna"
-              className="w-full rounded-xl border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-5000/10"
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
+
           {/* Keterangan */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -406,6 +410,10 @@ export default function BarangKeluar() {
                 </th>
 
                 <th className="px-6 py-4 text-left font-semibold text-slate-600">
+                  Nama pengguna
+                </th>
+
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
                   Tujuan
                 </th>
 
@@ -423,7 +431,7 @@ export default function BarangKeluar() {
               {history.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-6 py-10 text-center text-slate-400"
                   >
                     Belum ada transaksi barang keluar
@@ -457,6 +465,10 @@ export default function BarangKeluar() {
 
                       <td className="px-6 py-4 font-semibold text-red-600">
                         -{transaction.qty}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {transaction.user || "-"}
                       </td>
 
                       <td className="px-6 py-4">

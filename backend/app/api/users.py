@@ -21,6 +21,7 @@ router = APIRouter(
 VALID_ROLES = [
     "superuser",
     "admin",
+    "operator"
     "user"
 ]
 
@@ -55,9 +56,7 @@ def create_user(
     #username: str,
     #password: str,
     #full_name: str,
-    #db: Session = Depends(get_db),
-    #current_user: dict = Depends(require_superuser)
-):
+   ):
     existing_user = db.query(User).filter(
         User.username == payload.username
     ).first()

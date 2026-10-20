@@ -44,6 +44,7 @@ class StockService:
         db: Session,
         item_id: int,
         qty: int,
+        user:str,
         no_pr:str,
     ):
         item = (

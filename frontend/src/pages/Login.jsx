@@ -60,11 +60,11 @@ export default function Login({ onLogin }) {
             </div>
 
             <h1 className="text-2xl font-bold text-slate-900">
-              Gudang Syahdan
+              ME Syahdan
             </h1>
 
             <p className="text-sm text-slate-500 mt-2">
-              Sistem Manajemen Gudang
+              Untuk Keperluan ME Syahdan
             </p>
 
           </div>
@@ -176,7 +176,7 @@ export default function Login({ onLogin }) {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-400">
-              © {new Date().getFullYear()} Gudang Syahdan
+              © {new Date().getFullYear()} ME Syahdan
             </p>
           </div>
 

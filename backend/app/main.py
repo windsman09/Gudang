@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import Base, engine
-from app.api import auth, users, items, stock_in, stock_out, export
+from app.api import auth, users, items, stock_in, stock_out, export, modbus
 # Import model jika diperlukan registrasi eksplisit ke SQLAlchemy metadata
 from app.models.stock_out import StockOut
 
@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Warehouse Management", lifespan=lifespan)
+app = FastAPI(title="ME Syahdan e", lifespan=lifespan)
 
 # Setup CORS untuk React (Vite)
 app.add_middleware(
@@ -38,3 +38,5 @@ app.include_router(items.router)
 app.include_router(stock_in.router)
 app.include_router(stock_out.router)
 app.include_router(export.router)
+app.include_router(modbus.router)
+
