@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Thermometer, Sun, Power, RefreshCw, AlertCircle } from "lucide-react";
-
+import api from "../api/api";
 export default function Monitoring() {
   // State untuk memilih kelas mana yang sedang dilihat
   const [selectedClass, setSelectedClass] = useState("kelas-1");

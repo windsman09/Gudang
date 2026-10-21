@@ -1,19 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.core.security import hash_password
 from app.models.user import User
 from app.core.dependencies import get_current_user
-from app.core.permissions import require_superuser
-from pydantic import BaseModel
-
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"]
 )
-
 
 # =========================================================
 # Role yang tersedia
@@ -21,42 +18,41 @@ router = APIRouter(
 VALID_ROLES = [
     "superuser",
     "admin",
-    "operator"
+    "operator",
     "user"
 ]
 
-class CreateUserRequest(BaseModel) :
+class CreateUserRequest(BaseModel):
     username: str
     password: str
     full_name: str
 
+
 # =========================================================
-# Cek apakah user yang sedang login adalah Super User
+# Helper: Cek apakah user yang sedang login adalah Super User
 # =========================================================
 def require_superuser(
     current_user: dict = Depends(get_current_user)
 ):
     if current_user.get("role") != "superuser":
         raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_403_FORBIDDEN,  # Diperbaiki: Pakai status.
             detail="Hanya Super User yang dapat melakukan aksi ini"
-        )  # 3. Removed the trailing extra parenthesis here
-
+        )
     return current_user
+
+
 # =========================================================
 # Tambah User
-# User baru selalu dibuat sebagai "user"
-# Role dapat diubah kemudian oleh Super User
 # =========================================================
 @router.post("/")
 def create_user(
     payload: CreateUserRequest,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(require_superuser)
-    #username: str,
-    #password: str,
-    #full_name: str,
-   ):
+    current_user: dict = Depends(require_superuser) 
+    # CATATAN: Jika ingin registrasi PUBLIK (tanpa login superuser),
+    # hapus baris `current_user: dict = Depends(require_superuser)` di atas.
+):
     existing_user = db.query(User).filter(
         User.username == payload.username
     ).first()
@@ -66,8 +62,6 @@ def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username sudah digunakan"
         )
-
-    #hashed_password = hash_password(password)
 
     user = User(
         username=payload.username,
@@ -101,7 +95,7 @@ def get_my_profile(
 
     if not user_id:
         raise HTTPException(
-            status_code=401,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token tidak memiliki user ID"
         )
 
@@ -111,7 +105,7 @@ def get_my_profile(
 
     if not user:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User tidak ditemukan"
         )
 
@@ -147,8 +141,7 @@ def get_users(
 
 
 # =========================================================
-# Ubah Role User
-# Hanya Super User
+# Ubah Role User (Hanya Super User)
 # =========================================================
 @router.put("/{user_id}/role")
 def update_user_role(
@@ -157,11 +150,10 @@ def update_user_role(
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_superuser)
 ):
-    # Cek role
     if role not in VALID_ROLES:
         raise HTTPException(
-            status_code=400,
-            detail="Role harus superuser, admin, atau user"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Role tidak valid. Pilihan role: {', '.join(VALID_ROLES)}"
         )
 
     user = db.query(User).filter(
@@ -170,19 +162,15 @@ def update_user_role(
 
     if not user:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User tidak ditemukan"
         )
 
-    # ID user yang sedang login
-    current_user_id = int(
-        current_user.get("sub")
-    )
+    current_user_id = int(current_user.get("sub"))
 
-    # Tidak boleh mengubah role sendiri
     if user.id == current_user_id:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Anda tidak dapat mengubah role akun sendiri"
         )
 
@@ -215,19 +203,15 @@ def delete_user(
 
     if not user:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User tidak ditemukan"
         )
 
-    # ID user yang sedang login
-    current_user_id = int(
-        current_user.get("sub")
-    )
+    current_user_id = int(current_user.get("sub"))
 
-    # Tidak boleh menghapus akun sendiri
     if user.id == current_user_id:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Anda tidak dapat menghapus akun sendiri"
         )
 
@@ -237,4 +221,3 @@ def delete_user(
     return {
         "message": "User berhasil dihapus"
     }
-
