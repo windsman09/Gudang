@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Thermometer, Sun, Power, RefreshCw, AlertCircle } from "lucide-react";
 
 export default function Monitoring() {
@@ -75,7 +75,6 @@ export default function Monitoring() {
 
     return deviceNames[classId]?.[index] || `Channel ${defaultChannel}`;
   };
-  // ================================================
 
   return (
     <div className="p-6">
@@ -145,7 +144,7 @@ export default function Monitoring() {
           </div>
         </div>
       </div>
-          
+
       {/* --- BAGIAN KONTROL RELAY --- */}
       <h2 className="mb-4 text-lg font-semibold text-slate-700">Kontrol Perangkat</h2>
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
