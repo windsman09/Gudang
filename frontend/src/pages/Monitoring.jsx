@@ -42,18 +42,11 @@ export default function Monitoring() {
       newRelays[index].is_on = !currentState;
       setRelays(newRelays);
 
-      const response = await fetch(`${API_URL}/api/modbus/${selectedClass}/relay/${index}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state: !currentState }),
+      await api.post(`/api/modbus/${selectedClass}/relay/${index}`,{
+        state: !currentState,
       });
-
-      if (!response.ok) {
-        throw new Error("Gagal mengubah status relay");
-      }
     } catch (err) {
-      alert(err.message);
-      // Rollback jika gagal
+      alert(err.response?.data?.detail || " Gagal mengubah status relay");
       fetchDeviceStatus();
     }
   };
