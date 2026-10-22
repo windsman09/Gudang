@@ -9,6 +9,43 @@ import {
 
 import api from "../services/api";
 
+// Mendapatkan tanggal hari ini berdasarkan zona waktu lokal
+const getToday = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+
+  return new Date(now.getTime() - offset * 60000)
+    .toISOString()
+    .slice(0, 10);
+};
+
+// Format tanggal agar tampil dalam format Indonesia
+const formatDate = (date) => {
+  if (!date) return "-";
+
+  const dateString = String(date).slice(0, 10);
+  const parsedDate = new Date(`${dateString}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) return "-";
+
+  return parsedDate.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+// Format tanggal dan waktu transaksi
+const formatDateTime = (date) => {
+  if (!date) return "-";
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) return "-";
+
+  return parsedDate.toLocaleString("id-ID");
+};
+
 export default function BarangKeluar() {
   const [items, setItems] = useState([]);
   const [history, setHistory] = useState([]);
@@ -21,6 +58,7 @@ export default function BarangKeluar() {
     qty: "",
     destination: "",
     user: "",
+    usage_date: getToday(),
     note: "",
   });
 
@@ -31,10 +69,22 @@ export default function BarangKeluar() {
   const fetchItems = async () => {
     try {
       const response = await api.get("/items");
-      setItems(response.data);
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        setItems(data);
+      } else if (Array.isArray(data?.items)) {
+        setItems(data.items);
+      } else if (Array.isArray(data?.data)) {
+        setItems(data.data);
+      } else {
+        setItems([]);
+        console.error("Format respons /items tidak sesuai:", data);
+        setError("Format data barang tidak valid.");
+      }
     } catch (err) {
       console.error("Gagal mengambil barang:", err);
-      setError("Gagal mengambil daftar barang");
+      setError("Gagal mengambil daftar barang.");
     }
   };
 
@@ -42,7 +92,21 @@ export default function BarangKeluar() {
   const fetchHistory = async () => {
     try {
       const response = await api.get("/stock-out/");
-      setHistory(response.data);
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        setHistory(data);
+      } else if (Array.isArray(data?.items)) {
+        setHistory(data.items);
+      } else if (Array.isArray(data?.data)) {
+        setHistory(data.data);
+      } else {
+        setHistory([]);
+        console.error(
+          "Format respons /stock-out/ tidak sesuai:",
+          data
+        );
+      }
     } catch (err) {
       console.error("Gagal mengambil riwayat:", err);
     }
@@ -73,7 +137,9 @@ export default function BarangKeluar() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export barang keluar gagal:", err);
-      alert("Gagal export Excel. Periksa koneksi, login, dan backend.");
+      alert(
+        "Gagal export Excel. Periksa koneksi, login, dan backend."
+      );
     }
   };
 
@@ -95,12 +161,22 @@ export default function BarangKeluar() {
     setError("");
 
     if (!form.item_id) {
-      setError("Silakan pilih barang");
+      setError("Silakan pilih barang.");
       return;
     }
 
     if (!form.qty || Number(form.qty) <= 0) {
-      setError("Jumlah barang harus lebih dari 0");
+      setError("Jumlah barang harus lebih dari 0.");
+      return;
+    }
+
+    if (!Number.isInteger(Number(form.qty))) {
+      setError("Jumlah barang harus berupa bilangan bulat.");
+      return;
+    }
+
+    if (!form.usage_date) {
+      setError("Tanggal pemakaian wajib diisi.");
       return;
     }
 
@@ -109,11 +185,11 @@ export default function BarangKeluar() {
     );
 
     if (!selectedItem) {
-      setError("Barang tidak ditemukan");
+      setError("Barang tidak ditemukan.");
       return;
     }
 
-    if (Number(form.qty) > selectedItem.stock) {
+    if (Number(form.qty) > Number(selectedItem.stock)) {
       setError(
         `Stok tidak cukup. Stok tersedia: ${selectedItem.stock}`
       );
@@ -126,31 +202,38 @@ export default function BarangKeluar() {
       const response = await api.post("/stock-out/", {
         item_id: Number(form.item_id),
         qty: Number(form.qty),
-        user: form.user,
-        destination: form.destination || null,
-        note: form.note || null,
+        user: form.user.trim() || null,
+        destination: form.destination.trim() || null,
+        usage_date: form.usage_date,
+        note: form.note.trim() || null,
       });
 
       setMessage(
-        response.data.message || "Barang keluar berhasil disimpan"
+        response.data.message ||
+          "Barang keluar berhasil disimpan."
       );
 
       setForm({
         item_id: "",
         qty: "",
-        user: "",
         destination: "",
+        user: "",
+        usage_date: getToday(),
         note: "",
       });
 
-      await fetchItems();
-      await fetchHistory();
+      await Promise.all([fetchItems(), fetchHistory()]);
     } catch (err) {
       console.error("Gagal menyimpan barang keluar:", err);
 
+      const detail = err.response?.data?.detail;
+
       setError(
-        err.response?.data?.detail ||
-          "Gagal menyimpan barang keluar"
+        typeof detail === "string"
+          ? detail
+          : Array.isArray(detail)
+            ? detail.map((item) => item.msg).join(", ")
+            : "Gagal menyimpan barang keluar. Periksa data dan backend."
       );
     } finally {
       setLoading(false);
@@ -304,7 +387,8 @@ export default function BarangKeluar() {
               type="number"
               name="qty"
               min="1"
-              max={selectedItem?.stock || undefined}
+              step="1"
+              max={selectedItem?.stock ?? undefined}
               value={form.qty}
               onChange={handleChange}
               placeholder="Masukkan jumlah"
@@ -329,19 +413,40 @@ export default function BarangKeluar() {
             />
           </div>
 
-          {/* Nama user */}
+          {/* Nama pengguna barang */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
-              Nama user
+              Nama Pengguna Barang
             </label>
+
             <input
               type="text"
               name="user"
               value={form.user}
               onChange={handleChange}
-              placeholder="Nama Pengguna"
+              placeholder="Masukkan nama pengguna barang"
               className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
             />
+          </div>
+
+          {/* Tanggal pemakaian */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Tanggal Pemakaian
+            </label>
+
+            <input
+              type="date"
+              name="usage_date"
+              value={form.usage_date}
+              onChange={handleChange}
+              required
+              className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+            />
+
+            <p className="mt-1 text-xs text-slate-500">
+              Tanggal saat barang digunakan, tidak harus tanggal input.
+            </p>
           </div>
 
           {/* Keterangan */}
@@ -410,7 +515,11 @@ export default function BarangKeluar() {
                 </th>
 
                 <th className="px-6 py-4 text-left font-semibold text-slate-600">
-                  Nama pengguna
+                  Nama Pengguna
+                </th>
+
+                <th className="px-6 py-4 text-left font-semibold text-slate-600">
+                  Tanggal Pemakaian
                 </th>
 
                 <th className="px-6 py-4 text-left font-semibold text-slate-600">
@@ -422,7 +531,7 @@ export default function BarangKeluar() {
                 </th>
 
                 <th className="px-6 py-4 text-left font-semibold text-slate-600">
-                  Tanggal
+                  Tanggal Transaksi
                 </th>
               </tr>
             </thead>
@@ -431,7 +540,7 @@ export default function BarangKeluar() {
               {history.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-10 text-center text-slate-400"
                   >
                     Belum ada transaksi barang keluar
@@ -471,6 +580,10 @@ export default function BarangKeluar() {
                         {transaction.user || "-"}
                       </td>
 
+                      <td className="px-6 py-4 text-slate-500">
+                        {formatDate(transaction.usage_date)}
+                      </td>
+
                       <td className="px-6 py-4">
                         {transaction.destination || "-"}
                       </td>
@@ -480,11 +593,7 @@ export default function BarangKeluar() {
                       </td>
 
                       <td className="px-6 py-4 text-slate-500">
-                        {transaction.created_at
-                          ? new Date(
-                              transaction.created_at
-                            ).toLocaleString("id-ID")
-                          : "-"}
+                        {formatDateTime(transaction.created_at)}
                       </td>
                     </tr>
                   );

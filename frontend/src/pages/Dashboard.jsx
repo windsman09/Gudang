@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -5,39 +6,26 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   Search,
-  User,
-  LogOut,
-  ChevronDown,
 } from "lucide-react";
 
 import api from "../api/api";
 
-export default function Dashboard({ onLogout }) {
+export default function Dashboard({ onLogout, user }) {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [user, setUser] = useState(null);
-  const [showProfile, setShowProfile] = useState(false);
-
   /*
-   * =========================
-   * Ambil data saat Dashboard dibuka
-   * =========================
+   * Ambil daftar barang saat Dashboard dibuka
    */
   useEffect(() => {
     fetchItems();
-    fetchProfile();
   }, []);
 
   /*
-   * =========================
-   * Ambil daftar barang
-   * =========================
+   * Ambil daftar barang dari backend
    */
-
-
   async function fetchItems() {
     try {
       setLoading(true);
@@ -45,13 +33,7 @@ export default function Dashboard({ onLogout }) {
 
       const response = await api.get("/items");
       const data = response.data;
-      console.log("Status:", response.status);
-      console.log("URL:", response.config.url);
-      console.log("Data:", response.data);
-      console.log("Array:", Array.isArray(response.data));
 
-
-    // Terima array langsung atau array di dalam objek respons.
       let itemList;
 
       if (Array.isArray(data)) {
@@ -85,30 +67,6 @@ export default function Dashboard({ onLogout }) {
       }
     } finally {
       setLoading(false);
-    }
-  }
-
-
-
-  /*
-   * =========================
-   * Ambil profil user
-   * =========================
-   */
-  async function fetchProfile() {
-    try {
-      const response = await api.get("/users/me");
-
-      setUser(response.data);
-    } catch (error) {
-      console.error(
-        "Gagal mengambil profil:",
-        error
-      );
-
-      if (error.response?.status === 401) {
-        onLogout();
-      }
     }
   }
 
@@ -205,118 +163,7 @@ export default function Dashboard({ onLogout }) {
   return (
     <div className="min-h-screen bg-slate-100">
 
-      {/* =========================
-          Header
-          ========================= */}
-      {/*<header className="flex items-center justify-between border-b bg-white px-6 py-4 shadow-sm">
 
-        {/* Judul 
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">
-            Dashboard Gudang
-          </h1>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Ringkasan dan daftar barang gudang
-          </p>
-        </div>
-
-        {/* =========================
-            User Profile
-            ========================= 
-        <div className="relative">
-
-          <button
-            type="button"
-            onClick={() =>
-              setShowProfile(!showProfile)
-            }
-            className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-slate-100"
-          >
-
-            {/* Avatar 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white">
-              {user?.full_name ? (
-                user.full_name
-                  .charAt(0)
-                  .toUpperCase()
-              ) : user?.username ? (
-              user.username.charAt(0). toUpperCase()
-              ) : (
-                <User size={20} />
-              )}
-            </div>
-
-            {/* Username 
-            <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold text-slate-800">
-                {user?.username || "User"}
-              </p>
-
-              <p className="text-xs text-slate-500">
-                {user?.role || "user"}
-              </p>
-            </div>
-
-            <ChevronDown
-              size={18}
-              className="text-slate-400"
-            />
-
-          </button>
-
-          {/* =========================
-              Dropdown Profile
-              ========================= 
-          {showProfile && (
-            <div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
-
-              {/* Informasi User 
-              <div className="mb-4 flex items-center gap-3">
-
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-semibold text-white">
-                  {user?.username
-                    ? user.username
-                        .charAt(0)
-                        .toUpperCase()
-                    : "U"}
-                </div>
-
-                <div>
-                  <p className="font-semibold text-slate-800">
-                    {user?.username || "User"}
-                  </p>
-
-                  <p className="text-sm text-slate-500">
-                    {user?.role || "user"}
-                  </p>
-                </div>
-
-              </div>
-
-              {/* Logout 
-              <div className="border-t pt-3">
-
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600 transition hover:bg-red-50"
-                >
-                  <LogOut size={18} />
-
-                  <span>
-                    Logout
-                  </span>
-                </button>
-
-              </div>
-
-            </div>
-          )}
-
-        </div>
-
-      </header>*/}
 
       {/* =========================
           Content
