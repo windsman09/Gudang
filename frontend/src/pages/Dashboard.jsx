@@ -1,6 +1,4 @@
-
 import { useEffect, useMemo, useState } from "react";
-
 import {
   Package,
   ArrowDownToLine,
@@ -9,6 +7,7 @@ import {
 } from "lucide-react";
 
 import api from "../api/api";
+import UsageChart from "../components/UsageChart"; // Import komponen grafik
 
 export default function Dashboard({ onLogout, user }) {
   const [items, setItems] = useState([]);
@@ -128,19 +127,16 @@ export default function Dashboard({ onLogout, user }) {
   const totalJenisBarang = items.length;
 
   // Total seluruh stok
-  const totalStok = items.reduce(
-    (total, item) => {
-      return (
-        total +
-        Number(
-          item.stock ??
-            item.stok ??
-            0
-        )
-      );
-    },
-    0
-  );
+  const totalStok = items.reduce((total, item) => {
+    return (
+      total +
+      Number(
+        item.stock ??
+          item.stok ??
+          0
+      )
+    );
+  }, 0);
 
   // Jumlah barang yang stoknya minimum
   const stokMinimum = items.filter((item) => {
@@ -162,88 +158,74 @@ export default function Dashboard({ onLogout, user }) {
 
   return (
     <div className="min-h-screen bg-slate-100">
-
-
-
       {/* =========================
           Content
           ========================= */}
-      <main className="p-6">
+      <main className="p-6 space-y-6">
 
         {/* =========================
             Cards Statistik
             ========================= */}
-        <div className="mb-6 grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
 
           {/* Total Jenis Barang */}
           <div className="rounded-xl bg-white p-6 shadow">
-
-            <div className="mb-4 flex items-center justify-between">
-
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">
                   Total Jenis Barang
                 </p>
-
                 <p className="mt-1 text-3xl font-bold text-slate-800">
                   {totalJenisBarang}
                 </p>
               </div>
-
               <div className="rounded-lg bg-blue-100 p-3 text-blue-600">
                 <Package size={24} />
               </div>
-
             </div>
-
           </div>
 
           {/* Total Stok */}
           <div className="rounded-xl bg-white p-6 shadow">
-
-            <div className="mb-4 flex items-center justify-between">
-
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">
                   Total Stok
                 </p>
-
                 <p className="mt-1 text-3xl font-bold text-slate-800">
                   {totalStok}
                 </p>
               </div>
-
               <div className="rounded-lg bg-green-100 p-3 text-green-600">
                 <ArrowDownToLine size={24} />
               </div>
-
             </div>
-
           </div>
 
           {/* Stok Minimum */}
           <div className="rounded-xl bg-white p-6 shadow">
-
-            <div className="mb-4 flex items-center justify-between">
-
+            <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-500">
                   Stok Minimum
                 </p>
-
                 <p className="mt-1 text-3xl font-bold text-slate-800">
                   {stokMinimum}
                 </p>
               </div>
-
               <div className="rounded-lg bg-orange-100 p-3 text-orange-600">
                 <ArrowUpFromLine size={24} />
               </div>
-
             </div>
-
           </div>
 
+        </div>
+
+        {/* =========================
+            Grafik Pemakaian Barang
+            ========================= */}
+        <div className="w-full">
+          <UsageChart />
         </div>
 
         {/* =========================
@@ -253,38 +235,29 @@ export default function Dashboard({ onLogout, user }) {
 
           {/* Header Daftar Barang */}
           <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
             <div>
               <h2 className="text-xl font-semibold text-slate-800">
                 Daftar Barang
               </h2>
-
               <p className="text-sm text-slate-500">
-                Cari barang berdasarkan kode,
-                nama, kategori, atau lokasi
+                Cari barang berdasarkan kode, nama, kategori, atau lokasi
               </p>
             </div>
 
             {/* Search */}
             <div className="relative w-full md:w-80">
-
               <Search
                 size={18}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
-
               <input
                 type="text"
                 value={search}
-                onChange={(e) =>
-                  setSearch(e.target.value)
-                }
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari barang..."
                 className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
-
             </div>
-
           </div>
 
           {/* Error */}
@@ -298,61 +271,30 @@ export default function Dashboard({ onLogout, user }) {
               Loading / Table
               ========================= */}
           {loading ? (
-
             <div className="py-10 text-center text-slate-500">
               Memuat data barang...
             </div>
-
           ) : (
-
             <div className="overflow-x-auto">
-
               <table className="w-full text-left text-sm">
 
                 {/* Table Header */}
                 <thead className="border-b bg-slate-50">
-
                   <tr>
-
-                    <th className="px-4 py-3">
-                      No
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Kode Barang
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Nama Barang
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Kategori
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Stok
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Satuan
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Lokasi
-                    </th>
-
+                    <th className="px-4 py-3">No</th>
+                    <th className="px-4 py-3">Kode Barang</th>
+                    <th className="px-4 py-3">Nama Barang</th>
+                    <th className="px-4 py-3">Kategori</th>
+                    <th className="px-4 py-3">Stok</th>
+                    <th className="px-4 py-3">Satuan</th>
+                    <th className="px-4 py-3">Lokasi</th>
                   </tr>
-
                 </thead>
 
                 {/* Table Body */}
                 <tbody>
-
                   {filteredItems.length === 0 ? (
-
                     <tr>
-
                       <td
                         colSpan="7"
                         className="px-4 py-10 text-center text-slate-500"
@@ -361,133 +303,95 @@ export default function Dashboard({ onLogout, user }) {
                           ? `Barang "${search}" tidak ditemukan`
                           : "Belum ada data barang"}
                       </td>
-
                     </tr>
-
                   ) : (
+                    filteredItems.map((item, index) => {
+                      const kode =
+                        item.item_code ||
+                        item.kode_barang ||
+                        item.kode ||
+                        "-";
 
-                    filteredItems.map(
-                      (item, index) => {
+                      const nama =
+                        item.item_name ||
+                        item.nama_barang ||
+                        item.nama ||
+                        "-";
 
-                        const kode =
-                          item.item_code ||
-                          item.kode_barang ||
-                          item.kode ||
-                          "-";
+                      const kategori =
+                        item.category ||
+                        item.kategori ||
+                        "-";
 
-                        const nama =
-                          item.item_name ||
-                          item.nama_barang ||
-                          item.nama ||
-                          "-";
+                      const stok = Number(
+                        item.stock ??
+                          item.stok ??
+                          0
+                      );
 
-                        const kategori =
-                          item.category ||
-                          item.kategori ||
-                          "-";
+                      const unit =
+                        item.unit ||
+                        item.satuan ||
+                        "-";
 
-                        const stok =
-                          Number(
-                            item.stock ??
-                              item.stok ??
-                              0
-                          );
+                      const lokasi =
+                        item.location ||
+                        item.lokasi ||
+                        "-";
 
-                        const unit =
-                          item.unit ||
-                          item.satuan ||
-                          "-";
+                      const minimum = Number(
+                        item.min_stock ??
+                          item.stok_minimum ??
+                          item.minimum_stok ??
+                          10
+                      );
 
-                        const lokasi =
-                          item.location ||
-                          item.lokasi ||
-                          "-";
+                      const stokRendah = stok <= minimum;
 
-                        const minimum =
-                          Number(
-                            item.min_stock ??
-                              item.stok_minimum ??
-                              item.minimum_stok ??
-                              10
-                          );
-
-                        const stokRendah =
-                          stok <= minimum;
-
-                        return (
-
-                          <tr
-                            key={item.id}
-                            className="border-b hover:bg-slate-50"
-                          >
-
-                            <td className="px-4 py-3">
-                              {index + 1}
-                            </td>
-
-                            <td className="px-4 py-3 font-medium text-slate-800">
-                              {kode}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {nama}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {kategori}
-                            </td>
-
-                            <td className="px-4 py-3">
-
-                              <span
-                                className={
-                                  stokRendah
-                                    ? "font-semibold text-red-600"
-                                    : "text-slate-700"
-                                }
-                              >
-                                {stok}
-                              </span>
-
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {unit}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {lokasi}
-                            </td>
-
-                          </tr>
-
-                        );
-                      }
-                    )
-
+                      return (
+                        <tr
+                          key={item.id}
+                          className="border-b hover:bg-slate-50"
+                        >
+                          <td className="px-4 py-3">{index + 1}</td>
+                          <td className="px-4 py-3 font-medium text-slate-800">
+                            {kode}
+                          </td>
+                          <td className="px-4 py-3">{nama}</td>
+                          <td className="px-4 py-3">{kategori}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={
+                                stokRendah
+                                  ? "font-semibold text-red-600"
+                                  : "text-slate-700"
+                              }
+                            >
+                              {stok}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">{unit}</td>
+                          <td className="px-4 py-3">{lokasi}</td>
+                        </tr>
+                      );
+                    })
                   )}
-
                 </tbody>
 
               </table>
-
             </div>
-
           )}
 
           {/* Jumlah hasil */}
           {!loading && (
             <div className="mt-4 text-sm text-slate-500">
-              Menampilkan{" "}
-              {filteredItems.length} dari{" "}
-              {items.length} barang
+              Menampilkan {filteredItems.length} dari {items.length} barang
             </div>
           )}
 
         </div>
 
       </main>
-
     </div>
   );
 }
