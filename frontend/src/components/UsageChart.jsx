@@ -33,7 +33,7 @@ export default function UsageChart() {
   return (
     <div className="rounded-xl bg-white p-6 shadow">
       <h2 className="text-xl font-semibold text-slate-800 mb-1">
-        Tren Pemakaian Barang
+        Grafik Total Pemakain Barang
       </h2>
       <p className="text-sm text-slate-500 mb-6">
         Total barang keluar dalam 6 bulan terakhir
