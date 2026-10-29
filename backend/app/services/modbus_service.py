@@ -40,9 +40,15 @@ def get_room_config(device_id: str):
     return ROOM_DEVICES[device_id]
 
 
+
 def read_all_relays(device_id: str):
     config = get_room_config(device_id)["relay"]
-    client = ModbusTcpClient(config["host"], port=config["port"])
+    client = ModbusTcpClient(
+        config["host"],
+        port=config["port"],
+        timeout=3,
+    )
+
     default_channels = [
         {"channel": i + 1, "is_on": False, "raw_value": None}
         for i in range(NUM_RELAYS)
@@ -50,33 +56,44 @@ def read_all_relays(device_id: str):
 
     try:
         if not client.connect():
+            print("Koneksi relay gagal:", config["host"])
             return default_channels
+
         response = client.read_holding_registers(
-            RELAY_START_ADDRESS, count=NUM_RELAYS
+            RELAY_START_ADDRESS,
+            count=NUM_RELAYS,
+            device_id=config["unit_id"],
         )
+
+        print("Modbus response:", response)
+
         if response.isError():
+            print("Gagal membaca register:", response)
             return default_channels
+
+        print("Register:", response.registers)
 
         channels = []
         for i, value in enumerate(response.registers):
-            if value == OUTPUT_ON:
-                is_on = True
-            elif value == OUTPUT_OFF:
-                is_on = False
-            else:
-                # Unknown register values must not be reported as ON.
-                is_on = False
             channels.append({
                 "channel": i + 1,
-                "is_on": is_on,
+                "is_on": value != 0,
                 "raw_value": value,
             })
+
         return channels
-    except Exception:
+
+    except Exception as e:
+        print("Error read_all_relays:", repr(e))
         return default_channels
+
     finally:
         client.close()
 
+
+
+
+     
 
 def write_relay(device_id: str, index: int, state: bool):
     if index < 0 or index >= NUM_RELAYS:
@@ -103,7 +120,6 @@ def write_relay(device_id: str, index: int, state: bool):
                 status_code=502,
                 detail="Gagal menulis ke modul relay"
             )
-
         return {
             "message": "Write OK",
             "address": address,
@@ -160,4 +176,8 @@ def read_all_sensors(device_id: str):
         }
     finally:
         client.close()
+
+
+
+
 

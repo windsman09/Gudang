@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from app.services.modbus_service import read_all_relays, read_all_sensors, write_relay
 from app.core.permissions import require_operator
+from app.core.permissions import require_roles
 
 router = APIRouter(prefix="/api/modbus", tags=["Modbus"])
 
@@ -47,7 +48,7 @@ def set_relay(
     device_id: str, 
     index: int, 
     request: SwitchRequest,
-    current_user: dict = Depends(require_operator)  # <-- Tetap wajib login sebagai Operator/Admin/Superuser
+    current_user: dict = Depends(require_operator)# <-- Tetap wajib login sebagai Operator/Admin/Superuser
 ):
     result = write_relay(device_id, index, request.state)
     return {"status": "success", "data": result}

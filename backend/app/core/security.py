@@ -3,10 +3,11 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 from jose import JWTError, jwt
+from app.core.config import settings
 
 
 # Configure JWT_SECRET_KEY in the backend environment before starting the app.
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
+SECRET_KEY = settings.jwt_secret_key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 8
 
