@@ -1,11 +1,11 @@
 import hmac
-import os
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.sensor_reading import SensorReading
 
@@ -21,9 +21,9 @@ class SensorPayload(BaseModel):
 
 
 def verify_device_key(x_device_key: str | None = Header(default=None)):
-    configured_key = os.getenv("SENSOR_API_KEY")
+    configured_key = settings.sensor_api_key
     if not configured_key:
-        raise HTTPException(status_code=503, detail="SENSOR_API_KEY belum dikonfigurasi")
+        raise HTTPException(status_code=503, detail="SENSOR_API_KEY belum dikonfigurasi di backend/.env")
     if not x_device_key or not hmac.compare_digest(x_device_key, configured_key):
         raise HTTPException(status_code=401, detail="Device key tidak valid")
 
