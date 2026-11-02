@@ -3,9 +3,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import Base, engine
-from app.api import auth, users, items, stock_in, stock_out, export, modbus, device, usage, sensors
+from app.api import auth, users, items, stock_in, stock_out, export, modbus, device, usage, sensors, schedules
 from app.models.stock_out import StockOut
 from app.models.sensor_reading import SensorReading
+from app.models.schedule import Schedule
+from app.models.facility_booking import FacilityBooking
 
 
 @asynccontextmanager
@@ -40,3 +42,4 @@ app.include_router(device.router)
 app.include_router(modbus.router)
 app.include_router(usage.router)
 app.include_router(sensors.router)
+app.include_router(schedules.router)

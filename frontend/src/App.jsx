@@ -11,6 +11,7 @@ import Monitoring from "./pages/Monitoring";
 import BarangMasuk from "./pages/BarangMasuk";
 import BarangKeluar from "./pages/BarangKeluar";
 import UserManagement from "./pages/UserManagement";
+import JadwalPeminjaman from "./pages/JadwalPeminjaman";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -120,6 +121,12 @@ export default function App() {
 
       case "monitoring":
         return <Monitoring />;
+
+      case "jadwal-peminjaman":
+        if (!["admin", "superuser"].includes(user?.role)) {
+          return <Dashboard onLogout={handleLogout} user={user} />;
+        }
+        return <JadwalPeminjaman user={user} />;
 
       case "users":
         if (user?.role !== "superuser") {
