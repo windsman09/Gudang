@@ -9,6 +9,7 @@ import {
   Forklift,
   Users,
   Monitor,
+  CalendarDays,
   X,
 } from "lucide-react";
 
@@ -45,6 +46,11 @@ export default function Sidebar({
       label: "Monitoring Kelas",
       icon: Monitor,
     },
+
+    // Jadwal dan peminjaman hanya untuk Admin dan Super Admin
+    ...(["admin", "superuser"].includes(user?.role)
+      ? [{ id: "jadwal-peminjaman", label: "Jadwal & Peminjaman", icon: CalendarDays }]
+      : []),
 
     // Hanya muncul untuk Super Admin
     ...(user?.role === "superuser"
