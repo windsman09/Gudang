@@ -271,6 +271,7 @@ export default function Barang() {
                 <option value="bottle">Bottle</option>
                 <option value="pack">Pack</option>
                 <option value="can">Can</option>
+                <option value="sak">Sak</option>
               </select>
             </div>
             <div>
